@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="bgColor" format="color"/>
+    <attr name="bgToolbar" format="color"/>
+    <attr name="textModeColor" format="color" />
+    <attr name="cardWhiteBackground" format="color" />
+    <attr name="labelTextColor" format="color" />
+</resources>
