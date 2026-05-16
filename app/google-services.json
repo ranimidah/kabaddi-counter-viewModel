@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "726124379449",
+    "project_id": "android-kabbadi-rani-tantan",
+    "storage_bucket": "android-kabbadi-rani-tantan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726124379449:android:60ecdff70c76dccff97ce8",
+        "android_client_info": {
+          "package_name": "com.example.kabaddikounter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsXEsx96JcVi8Ru67LsA-Lsjnopk0ho0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
