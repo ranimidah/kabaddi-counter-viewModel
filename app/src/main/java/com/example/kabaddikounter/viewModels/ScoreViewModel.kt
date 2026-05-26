@@ -44,7 +44,6 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
     }
 
     private val prefs = ThemePreferences(application)
-    // Di ScoreViewModel.kt, ganti:
     val isDarkMode = prefs.isDarkMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 

@@ -1,4 +1,4 @@
-package com.example.kabaddikounter
+package com.example.kabaddikounter.data
 
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.kabaddikounter.data.MatchEntity
+import com.example.kabaddikounter.R
 
 class MatchAdapter : ListAdapter<MatchEntity, MatchAdapter.MatchViewHolder>(DiffCallback()) {
 

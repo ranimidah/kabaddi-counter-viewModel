@@ -18,16 +18,11 @@ import android.content.Intent
 import android.widget.EditText
 import android.widget.Toast
 import com.google.gson.GsonBuilder
-import androidx.core.content.FileProvider
-import java.io.File
-import java.io.FileWriter
-import android.os.Environment
 import android.Manifest
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
-import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : AppCompatActivity() {
 
@@ -107,6 +102,7 @@ class MainActivity : AppCompatActivity() {
             exportMatchToJson()
         }
 
+        // live score
         LiveScoreNotificationHelper.createChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
@@ -185,26 +181,25 @@ class MainActivity : AppCompatActivity() {
 
             // Simpan ke file
             val fileName = "matches_export_${System.currentTimeMillis()}.json"
-            val file = File(
-                getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
-                fileName
-            )
-            FileWriter(file).use { it.write(jsonString) }
-
-            // Share file
-            val uri = FileProvider.getUriForFile(
-                this@MainActivity,
-                "${packageName}.fileprovider",
-                file
-            )
-
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "application/json"
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val contentValues = android.content.ContentValues().apply {
+                put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/json")
+                put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Download/Kabaddi")
             }
 
-            startActivity(Intent.createChooser(shareIntent, "Export JSON via..."))
+            val uri = contentResolver.insert(
+                android.provider.MediaStore.Files.getContentUri("external"),
+                contentValues
+            )
+
+            uri?.let {
+                contentResolver.openOutputStream(it)?.use { outputStream ->
+                    outputStream.write(jsonString.toByteArray())
+                }
+                Toast.makeText(this@MainActivity, "Tersimpan di Downloads/Kabaddi", Toast.LENGTH_SHORT).show()
+            } ?: run {
+                Toast.makeText(this@MainActivity, "Gagal menyimpan file!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
