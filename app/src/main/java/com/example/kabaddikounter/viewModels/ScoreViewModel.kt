@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import android.app.Application
+import androidx.lifecycle.asLiveData
 import com.example.kabaddikounter.data.ThemePreferences
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -45,8 +46,9 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
 
     private val prefs = ThemePreferences(application)
     // Di ScoreViewModel.kt, ganti:
-    val isDarkMode = prefs.isDarkMode
+    val isDarkModeLive: LiveData<Boolean> = prefs.isDarkMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .asLiveData()
 
     fun toggleTheme(isDark: Boolean){
         viewModelScope.launch{

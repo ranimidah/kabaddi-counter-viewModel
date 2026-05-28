@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Letakkan di res/xml/preferences.xml -->
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="Tampilan">
+        <SwitchPreferenceCompat
+            app:key="dark_mode"
+            app:title="Dark Mode"
+            app:summary="Aktifkan tampilan gelap"
+            app:defaultValue="false" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
