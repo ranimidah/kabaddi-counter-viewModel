@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  fragment_settings.xml tidak perlu isi apapun.
+  Preference Library akan otomatis generate UI dari res/xml/preferences.xml
+  ketika SettingsFragment memanggil setPreferencesFromResource().
+-->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settings_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
