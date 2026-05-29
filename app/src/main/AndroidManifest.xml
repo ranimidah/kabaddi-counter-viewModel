@@ -42,7 +42,39 @@
         <service
             android:name=".LiveScoreForegroundService"
             android:foregroundServiceType="dataSync"
-            android:exported="false"/>
+            android:exported="false" />
+
+        <!-- MatchListWidget: shows live match list on home screen -->
+        <receiver
+            android:name=".MatchListWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.kabaddikounter.MATCH_LIST_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/match_list_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".MatchListWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
+
+        <!-- ForegroundServiceWidget: toggle persistent live score notification -->
+        <receiver
+            android:name=".ForegroundServiceWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.kabaddikounter.FOREGROUND_SERVICE_TOGGLE" />
+                <action android:name="com.example.kabaddikounter.FOREGROUND_SERVICE_UPDATE_UI" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/foreground_service_widget_info" />
+        </receiver>
 
         <!-- Firebase Cloud Messaging service -->
         <service
