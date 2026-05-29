@@ -34,8 +34,7 @@ class LiveMatchAdapter (
         holder.textStatus.text = match.status
 
 //        Tombol yg muncul kalo live aja
-        holder.btnSubscribe.visibility = if (match.status == "LIVE") View.GONE else View.VISIBLE
-        if(match.status == "LIVE") View.VISIBLE else View.GONE
+        holder.btnSubscribe.visibility = if (match.status == "LIVE") View.VISIBLE else View.GONE
         holder.btnSubscribe.setOnClickListener {
             onSubscribe(match)
         }

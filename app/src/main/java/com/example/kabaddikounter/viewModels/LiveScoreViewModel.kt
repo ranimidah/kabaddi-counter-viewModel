@@ -8,8 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.kabaddikounter.data.Match
 import com.example.kabaddikounter.data.MatchRepository
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+
+data class ScoreUpdate(
+    val scoreA: Int,
+    val scoreB: Int,
+    val scoringTeam: String,
+    val status: String
+)
 
 class LiveScoreViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = MatchRepository()
@@ -23,6 +32,17 @@ class LiveScoreViewModel(application: Application) : AndroidViewModel(applicatio
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
+    init {
+        // Collect FCM score updates from companion object flow
+        viewModelScope.launch {
+            scoreUpdateFlow.collect { update ->
+                if (_subscribedMatch.value != null) {
+                    updateSubscribedScore(update.scoreA, update.scoreB, update.status)
+                }
+            }
+        }
+    }
+
     fun loadMatches() {
         viewModelScope.launch {
             repository.getMatches()
@@ -33,18 +53,13 @@ class LiveScoreViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun subscribeToMatch(match: Match) {
         viewModelScope.launch {
-
             FirebaseMessaging.getInstance().token.await().let { token ->
                 repository.subscribeToMatch(match.id, token)
-                    .onSuccess {
-                        _subscribedMatch.value = match
-
-                    }
+                    .onSuccess { _subscribedMatch.value = match }
                     .onFailure { _error.value = it.message }
             }
         }
     }
-
 
     fun updateSubscribedScore(scoreA: Int, scoreB: Int, status: String) {
         _subscribedMatch.value = _subscribedMatch.value?.copy(
@@ -56,5 +71,14 @@ class LiveScoreViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun resetSubscription() {
         _subscribedMatch.value = null
+    }
+
+    companion object {
+        private val _scoreUpdateFlow = MutableSharedFlow<ScoreUpdate>(extraBufferCapacity = 1)
+        val scoreUpdateFlow: SharedFlow<ScoreUpdate> = _scoreUpdateFlow
+
+        fun emitScoreUpdate(update: ScoreUpdate) {
+            _scoreUpdateFlow.tryEmit(update)
+        }
     }
 }

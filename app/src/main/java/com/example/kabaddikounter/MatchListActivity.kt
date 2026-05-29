@@ -1,12 +1,13 @@
 package com.example.kabaddikounter
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.kabaddikounter.data.Match
 import com.example.kabaddikounter.viewModels.LiveScoreViewModel
 
 class MatchListActivity : AppCompatActivity() {
@@ -19,25 +20,32 @@ class MatchListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_match_list)
 
         adapter = LiveMatchAdapter { match ->
-            viewModel.subscribeToMatch(match)
-            Toast.makeText(this, "Berlangganan ke ${match.teamA} vs ${match.teamB}", Toast.LENGTH_SHORT).show()
-            finish() // kembali ke MainActivity
+            // Return the selected match to caller (HomeFragment via ActivityResultLauncher)
+            val resultIntent = Intent().apply {
+                putExtra(EXTRA_MATCH, match)
+            }
+            setResult(RESULT_OK, resultIntent)
+            finish()
         }
 
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewMatches)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        viewModel.matches.observe(this, Observer { matches ->
+        viewModel.matches.observe(this) { matches ->
             adapter.submitList(matches)
-        })
+        }
 
-        viewModel.error.observe(this, Observer { error ->
+        viewModel.error.observe(this) { error ->
             error?.let {
                 Toast.makeText(this, "Error: $it", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
 
         viewModel.loadMatches()
+    }
+
+    companion object {
+        const val EXTRA_MATCH = "extra_match"
     }
 }

@@ -37,7 +37,7 @@ object LiveScoreNotificationHelper {
         scoreB: Int
     ) {
         // PendingIntent → buka MainActivity saat notifikasi diklik
-        val intent = Intent(context, `MainActivity-old`::class.java).apply {
+        val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val pendingIntent = PendingIntent.getActivity(
