@@ -1,5 +1,6 @@
 package com.example.kabaddikounter
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -11,9 +12,9 @@ import androidx.core.app.NotificationManagerCompat
 
 object LiveScoreNotificationHelper {
 
-    private const val CHANNEL_ID = "live_score_channel"
+    const val CHANNEL_ID = "live_score_channel"
     private const val CHANNEL_NAME = "Live Score"
-    private const val NOTIFICATION_ID = 1001
+    const val NOTIFICATION_ID = 1001
 
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -29,14 +30,13 @@ object LiveScoreNotificationHelper {
         }
     }
 
-    fun showLiveScore(
+    fun buildNotification(
         context: Context,
         teamA: String,
         teamB: String,
         scoreA: Int,
         scoreB: Int
-    ) {
-        // PendingIntent → buka MainActivity saat notifikasi diklik
+    ): Notification {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -49,29 +49,37 @@ object LiveScoreNotificationHelper {
 
         val teamALabel = teamA.ifBlank { "Tim A" }
         val teamBLabel = teamB.ifBlank { "Tim B" }
+        val statusText = when {
+            scoreA > scoreB -> "$teamALabel sedang unggul!"
+            scoreB > scoreA -> "$teamBLabel sedang unggul!"
+            else -> "Skor seri!"
+        }
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_save) // ganti dengan ikon scorecard jika ada
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_save)
             .setContentTitle("⚡ Live Score Kabaddi")
             .setContentText("$teamALabel $scoreA — $scoreB $teamBLabel")
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText(
-                        "$teamALabel vs $teamBLabel\n" +
-                                "Skor: $scoreA  —  $scoreB\n" +
-                                if (scoreA > scoreB) "$teamALabel sedang unggul!"
-                                else if (scoreB > scoreA) "$teamBLabel sedang unggul!"
-                                else "Skor seri!"
-                    )
+                    .bigText("$teamALabel vs $teamBLabel\nSkor: $scoreA  —  $scoreB\n$statusText")
             )
-            .setOngoing(true)          // tidak bisa di-swipe hilang
-            .setOnlyAlertOnce(true)    // tidak bunyi/getar di setiap update
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
             .setSilent(true)
             .setContentIntent(pendingIntent)
             .setAutoCancel(false)
             .build()
+    }
 
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+    fun showLiveScore(
+        context: Context,
+        teamA: String,
+        teamB: String,
+        scoreA: Int,
+        scoreB: Int
+    ) {
+        NotificationManagerCompat.from(context)
+            .notify(NOTIFICATION_ID, buildNotification(context, teamA, teamB, scoreA, scoreB))
     }
 
     fun cancelNotification(context: Context) {
