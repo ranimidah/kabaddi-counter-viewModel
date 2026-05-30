@@ -8,4 +8,19 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue_primary">#0F2CE6</color>
+
+    <!-- Background -->
+    <color name="background_grey">#F2F2F2</color>
+
+    <!-- Text -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#666666</color>
+
+    <!-- Status -->
+    <color name="red_live">#CC0000</color>
+    <color name="orange_end">#E07000</color>
+
+    <!-- Button -->
+    <color name="orange_unsubscribe">#E07000</color>
+
 </resources>

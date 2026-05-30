@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kabaddikounter.databinding.FragmentRiwayatBinding
+import com.example.kabaddikounter.ui.MatchAdapter
 import com.example.kabaddikounter.viewModels.ScoreViewModel
 import kotlinx.coroutines.launch
 

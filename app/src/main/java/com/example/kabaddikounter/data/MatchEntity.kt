@@ -13,4 +13,11 @@ data class MatchEntity(
     val scoreA: Int,
     val scoreB: Int,
     val timestamp: Long = System.currentTimeMillis()
-)
+){
+    val winner: String
+        get() = when {
+            scoreA > scoreB -> teamAName
+            scoreB > scoreA -> teamBName
+            else -> "Seri"
+        }
+}

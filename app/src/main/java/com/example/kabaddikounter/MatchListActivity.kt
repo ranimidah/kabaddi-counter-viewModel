@@ -4,40 +4,46 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.kabaddikounter.viewModels.LiveScoreViewModel
+import com.example.kabaddikounter.databinding.ActivityMatchListBinding
+import com.example.kabaddikounter.repository.MatchRepository
+import com.example.kabaddikounter.viewModels.MatchListViewModel
+import com.example.kabaddikounter.viewModels.MatchListViewModelFactory
 
 class MatchListActivity : AppCompatActivity() {
 
-    private val viewModel: LiveScoreViewModel by viewModels()
-    private lateinit var adapter: LiveMatchAdapter
+    private lateinit var binding: ActivityMatchListBinding
+
+    private val viewModel: MatchListViewModel by viewModels {
+        MatchListViewModelFactory(MatchRepository(this))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_match_list)
+        binding = ActivityMatchListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        adapter = LiveMatchAdapter { match ->
-            viewModel.subscribeToMatch(match)
-            Toast.makeText(this, "Berlangganan ke ${match.teamA} vs ${match.teamB}", Toast.LENGTH_SHORT).show()
-            finish() // kembali ke MainActivity
-        }
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = this
 
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewMatches)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
-
-        viewModel.matches.observe(this, Observer { matches ->
-            adapter.submitList(matches)
-        })
-
-        viewModel.error.observe(this, Observer { error ->
-            error?.let {
-                Toast.makeText(this, "Error: $it", Toast.LENGTH_SHORT).show()
-            }
-        })
-
+        setupRecyclerView()
+        observeViewModel()
         viewModel.loadMatches()
+    }
+
+    private fun setupRecyclerView() {
+        binding.rvMatches.layoutManager = LinearLayoutManager(this)
+    }
+
+    private fun observeViewModel() {
+        viewModel.matches.observe(this) { matches ->
+            // TODO: update adapter
+        }
+        viewModel.subscribedMatch.observe(this) { match ->
+            // TODO: tampilkan live score panel
+        }
+        viewModel.error.observe(this) { message ->
+            message?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
+        }
     }
 }

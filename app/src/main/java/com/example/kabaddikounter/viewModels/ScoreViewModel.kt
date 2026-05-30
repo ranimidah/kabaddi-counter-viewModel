@@ -31,6 +31,21 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
     val scoreB: LiveData<Int>
         get() = _scoreB
 
+    // subscribe
+    private val _isSubscribed = MutableLiveData(false)
+    val isSubscribed: LiveData<Boolean> = _isSubscribed
+
+    // thema dark/light
+    private val prefs = ThemePreferences(application)
+
+    // room data
+    private val db = AppDatabase.getInstance(application)
+    private val matchDao = db.matchDao()
+    val allMatches = matchDao.getAllMatches()
+
+    // Status simpan untuk feedback ke UI
+    private val _saveStatus = MutableLiveData<String?>()
+
     fun incrementScoreA(points: Int = 1) {
         _scoreA.value = _scoreA.value!! + points
     }
@@ -44,7 +59,24 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
         _scoreB.value = 0;
     }
 
-    private val prefs = ThemePreferences(application)
+    // score subsribe
+    fun applyLiveScore(teamA: String, teamB: String, scoreA: Int, scoreB: Int) {
+        this.teamA.value = teamA
+        this.teamB.value = teamB
+        _scoreA.value = scoreA
+        _scoreB.value = scoreB
+        _isSubscribed.value = true
+    }
+
+    // subscribe reset
+    fun resetToDefault() {
+        _isSubscribed.value = false
+        reset()
+        teamA.value = "Team A"
+        teamB.value = "Team B"
+    }
+
+
     // Di ScoreViewModel.kt, ganti:
     val isDarkModeLive: LiveData<Boolean> = prefs.isDarkMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -57,14 +89,7 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
     }
 
     // Room Database
-    private val db = AppDatabase.getInstance(application)
-    private val matchDao = db.matchDao()
-    val allMatches = matchDao.getAllMatches()
-
-    // Status simpan untuk feedback ke UI
-    private val _saveStatus = MutableLiveData<String?>()
     val saveStatus: LiveData<String?> get() = _saveStatus
-
     fun saveMatch(title: String) {
         viewModelScope.launch {
             val match = MatchEntity(

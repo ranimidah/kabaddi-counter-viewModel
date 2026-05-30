@@ -9,4 +9,7 @@
     <item
         android:id="@+id/settingsFragment"
         android:title="Pengaturan" />
+    <item
+        android:id="@+id/welcomeFragment"
+        android:title="Keluar" />
 </menu>

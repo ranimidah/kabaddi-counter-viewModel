@@ -41,7 +41,15 @@
         </provider>
 
         <service
-            android:name=".LiveScoreForegroundService"
+            android:name=".service.FirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.LiveScoreForegroundService"
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
 

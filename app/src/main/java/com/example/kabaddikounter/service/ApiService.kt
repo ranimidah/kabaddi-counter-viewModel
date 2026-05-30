@@ -1,5 +1,8 @@
-package com.example.kabaddikounter.data
+package com.example.kabaddikounter.service
 
+import com.example.kabaddikounter.data.Match
+import com.example.kabaddikounter.data.SubscribeRequest
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -15,7 +18,7 @@ interface ApiService {
     suspend fun subscribeToMatch(
         @Path("id") matchId: String,
         @Body body: SubscribeRequest
-    ): retrofit2.Response<Unit>
+    ): Response<Unit>
 }
 
 object RetrofitClient {

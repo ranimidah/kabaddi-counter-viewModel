@@ -47,7 +47,9 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         appBarConfiguration = AppBarConfiguration(
             setOf(
+                R.id.welcomeFragment,
                 R.id.homeFragment,
+                R.id.matchListFragment,
                 R.id.riwayatFragment,
                 R.id.settingsFragment
             ),
@@ -57,6 +59,17 @@ class MainActivity : AppCompatActivity() {
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setupWithNavController(navController)
 
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.welcomeFragment) {
+                // Sembunyikan toolbar di halaman welcome (opsional)
+                supportActionBar?.hide()
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            } else {
+                supportActionBar?.show()
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+            }
+        }
+
         // dark mode
         val sharedPrefs = androidx.preference.PreferenceManager
             .getDefaultSharedPreferences(this)
@@ -64,6 +77,7 @@ class MainActivity : AppCompatActivity() {
 
         sharedPrefs.registerOnSharedPreferenceChangeListener { prefs, key ->
             if (key == "dark_mode") applyTheme(prefs.getBoolean("dark_mode", false))
+
 
 
 //        // Hubungkan BottomNavigationView ke NavController secara otomatis
