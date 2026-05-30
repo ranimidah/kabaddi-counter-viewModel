@@ -61,6 +61,20 @@
             app:popUpToInclusive="true" />
     </fragment>
 
+    <!-- Destinasi 2: RiwayatFragment -->
+    <fragment
+        android:id="@+id/riwayatFragment"
+        android:name="com.example.kabaddikounter.RiwayatFragment"
+        android:label="Riwayat Match"
+        tools:layout="@layout/fragment_riwayat" />
+
+    <!-- Destinasi 3: SettingsFragment -->
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.kabaddikounter.SettingsFragment"
+        android:label="Pengaturan"
+        tools:layout="@layout/fragment_settings" />
+
 </navigation>
 
 <!--<navigation xmlns:android="http://schemas.android.com/apk/res/android"-->

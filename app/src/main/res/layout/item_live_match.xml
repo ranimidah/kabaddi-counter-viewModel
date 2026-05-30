@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
+
         <variable
             name="match"
             type="com.example.kabaddikounter.data.Match" />
+
         <variable
             name="isSubscribed"
             type="boolean" />
-        <!--
-            statusColor dikirim sebagai Int (Color.parseColor)
-            karena status bisa "LIVE", "END", atau nilai lain
-        -->
-        <variable
-            name="statusColor"
-            type="int" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -33,61 +29,137 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <!-- "Tim A vs Tim B" — binding langsung dari variabel match -->
+            <!-- "Pertandingan pukul 10:23 WIB Tim A melawan Tim B" -->
             <TextView
-                android:id="@+id/textTeams"
+                android:id="@+id/textHeader"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@{(match.teamA.empty ? `Tim A` : match.teamA) + ` vs ` + (match.teamB.empty ? `Tim B` : match.teamB)}"
+                android:text="@{`Pertandingan pukul ` + (match.teamA.empty ? `Tim A` : match.teamA) + ` melawan ` + (match.teamB.empty ? `Tim B` : match.teamB)}"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Pertandingan Tim A melawan Tim B" />
 
-            <!-- Skor -->
+            <!-- Nama Tim A -->
             <TextView
-                android:id="@+id/textScore"
+                android:id="@+id/textTeamA"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="@{match.teamA.empty ? `Tim A` : match.teamA}"
+                android:textColor="@color/blue_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/textVs"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textHeader"
+                tools:text="Tim A" />
+
+            <!-- VS -->
+            <TextView
+                android:id="@+id/textVs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@{String.valueOf(match.scoreA) + ` — ` + String.valueOf(match.scoreB)}"
-                android:textColor="@color/text_primary"
-                android:textSize="36sp"
+                android:gravity="center"
+                android:text="vs"
+                android:textColor="@color/blue_primary"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textTeams" />
+                app:layout_constraintBottom_toBottomOf="@id/textScoreA"
+                app:layout_constraintEnd_toStartOf="@id/textTeamB"
+                app:layout_constraintStart_toEndOf="@id/textTeamA"
+                app:layout_constraintTop_toTopOf="@id/textScoreA" />
 
-            <!-- Status: warna diset dari adapter via statusColor -->
+            <!-- Nama Tim B -->
+            <TextView
+                android:id="@+id/textTeamB"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@{match.teamB.empty ? `Tim B` : match.teamB}"
+                android:textColor="@color/blue_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/textVs"
+                app:layout_constraintTop_toTopOf="@id/textTeamA"
+                tools:text="Tim B" />
+
+            <!-- Skor Tim A -->
+            <TextView
+                android:id="@+id/textScoreA"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="@{String.valueOf(match.scoreA)}"
+                android:textColor="@color/text_primary"
+                android:textSize="40sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/textVs"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textTeamA"
+                tools:text="0" />
+
+            <!-- Skor Tim B -->
+            <TextView
+                android:id="@+id/textScoreB"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@{String.valueOf(match.scoreB)}"
+                android:textColor="@color/text_primary"
+                android:textSize="40sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/textVs"
+                app:layout_constraintTop_toTopOf="@id/textScoreA"
+                tools:text="1" />
+
+            <!-- "Status: LIVE/END" -->
+            <TextView
+                android:id="@+id/textStatusLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Status: "
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textScoreA" />
+
             <TextView
                 android:id="@+id/textStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:text="@{match.status}"
-                android:textColor="@{statusColor}"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textScore" />
+                app:layout_constraintBaseline_toBaselineOf="@id/textStatusLabel"
+                app:layout_constraintStart_toEndOf="@id/textStatusLabel"
+                app:matchStatus="@{match.status}"
+                tools:text="LIVE"
+                tools:textColor="@color/red_live" />
 
-            <!--
-                Tombol Subscribe / Unsubscribe
-                - Text dan warna diatur via BindingAdapter (lihat MatchBindingAdapters.kt)
-                - visibility diatur di Adapter (LIVE = VISIBLE, END = GONE)
-            -->
+            <!-- Tombol Subscribe / Unsubscribe, hanya tampil saat LIVE -->
             <Button
                 android:id="@+id/btnSubscribe"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@{isSubscribed ? @string/unsubscribe : @string/subscribe}"
+                android:backgroundTint="@{isSubscribed ? @color/orange_unsubscribe : @color/blue_primary}"
                 android:textColor="@color/white"
                 android:textSize="13sp"
-                android:visibility="gone"
-                app:subscribeState="@{isSubscribed}"
+                android:visibility="@{match.status.equalsIgnoreCase(`LIVE`) ? View.VISIBLE : View.GONE}"
                 app:cornerRadius="6dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/textScoreA"
+                tools:visibility="visible" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

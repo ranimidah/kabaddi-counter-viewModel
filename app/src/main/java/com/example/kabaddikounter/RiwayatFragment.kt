@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kabaddikounter.databinding.FragmentRiwayatBinding
-import com.example.kabaddikounter.ui.MatchAdapter
+import com.example.kabaddikounter.ui.RiwayatAdapter
 import com.example.kabaddikounter.viewModels.ScoreViewModel
 import kotlinx.coroutines.launch
 
@@ -26,7 +26,7 @@ class RiwayatFragment : Fragment() {
     private var _binding: FragmentRiwayatBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: MatchAdapter
+    private lateinit var adapter: RiwayatAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,7 +49,7 @@ class RiwayatFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = MatchAdapter()
+        adapter = RiwayatAdapter()
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
     }

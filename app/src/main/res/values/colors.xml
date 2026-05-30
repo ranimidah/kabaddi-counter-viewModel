@@ -22,5 +22,6 @@
 
     <!-- Button -->
     <color name="orange_unsubscribe">#E07000</color>
+    <color name="card_background">#F9FAFB</color>
 
 </resources>
