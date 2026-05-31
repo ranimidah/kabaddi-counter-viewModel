@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/match', [MatchController::class, 'index']);
 Route::post('/match/{id}/subscribe', [MatchController::class, 'subscribe']);
+Route::get('/match/{id}/check-subscription', [MatchController::class, 'checkSubscription']);
+Route::delete('/match/{id}/unsubscribe', [MatchController::class, 'unsubscribe']);
 Route::put('/match/{id}/score', [MatchController::class, 'updateScore']);
 Route::post('/match/{id}/end', [MatchController::class, 'endMatch']);
 Route::post('/match/save', [MatchController::class, 'store']);

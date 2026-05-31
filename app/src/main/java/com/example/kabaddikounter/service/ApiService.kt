@@ -1,7 +1,6 @@
 package com.example.kabaddikounter.service
 
 import com.example.kabaddikounter.data.Match
-import com.example.kabaddikounter.data.SubscribeRequest
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -11,9 +10,10 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.0.12:8000/api/"
+    private const val BASE_URL = "http://192.168.1.53:8000/api/"
 
     val apiService: ApiService by lazy {
         Retrofit.Builder()
@@ -52,15 +52,21 @@ interface ApiService {
         @Body body: UpdateScoreRequest
     ): Response<Unit>
 
-    @POST("matches/{matchId}/subscribe")
+    @POST("match/{id}/subscribe")
     suspend fun subscribeToMatch(
-        @Path("matchId") matchId: Int,
+        @Path("id") matchId: Int,
         @Body body: SubscribeRequest
     ): Response<Unit>
 
-    @DELETE("matches/{matchId}/subscribe")
+    @DELETE("match/{id}/unsubscribe")
     suspend fun unsubscribeFromMatch(
-        @Path("matchId") matchId: Int,
-        @Body body: SubscribeRequest
+        @Path("id") matchId: Int,
+        @Query("fcm_token") fcmToken: String
     ): Response<Unit>
+
+    @GET("match/{id}/check-subscription")
+    suspend fun checkSubscription(
+        @Path("id") matchId: Int,
+        @Query("fcm_token") fcmToken: String
+    ): Response<CheckSubscriptionResponse>
 }

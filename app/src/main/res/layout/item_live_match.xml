@@ -8,7 +8,7 @@
 
         <variable
             name="match"
-            type="com.example.kabaddikounter.data.Match" />
+            type="com.example.kabaddikounter.service.MatchApiData" />
 
         <variable
             name="isSubscribed"

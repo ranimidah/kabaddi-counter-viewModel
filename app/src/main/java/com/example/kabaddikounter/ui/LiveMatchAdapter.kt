@@ -1,5 +1,6 @@
 package com.example.kabaddikounter.ui
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -7,14 +8,15 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kabaddikounter.data.Match
 import com.example.kabaddikounter.databinding.ItemLiveMatchBinding
+import com.example.kabaddikounter.service.MatchApiData
 
 class LiveMatchAdapter(
-    private val onSubscribe: (Match) -> Unit,
-    private val onMatchClick: (Match) -> Unit
-) : ListAdapter<Match, LiveMatchAdapter.ViewHolder>(DiffCallback()) {
+    private val onSubscribe: (MatchApiData) -> Unit,
+    private val onMatchClick: (MatchApiData) -> Unit
+) : ListAdapter<MatchApiData, LiveMatchAdapter.ViewHolder>(DiffCallback()) {
 
-    private var subscribedMatchId: String? = null
-    fun setSubscribedMatchId(id: String?) {
+    private var subscribedMatchId: Int? = null
+    fun setSubscribedMatchId(id: Int?) {
         subscribedMatchId = id
         notifyDataSetChanged()
     }
@@ -23,12 +25,13 @@ class LiveMatchAdapter(
         private val binding: ItemLiveMatchBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(match: Match) {
+        fun bind(match: MatchApiData) {
             binding.match = match
 
-            binding.isSubscribed = match.id.isNotBlank() && match.id == subscribedMatchId
+            binding.isSubscribed = match.id == subscribedMatchId
             binding.btnSubscribe.setOnClickListener {
-                if (match.id.isNotBlank()) onSubscribe(match)
+                Log.d("SUBSCRIBE", "tombol diklik, id: ${match.id}")
+                onSubscribe(match)
             }
 
             // binding.isSubscribed = isSubscribed
@@ -54,10 +57,10 @@ class LiveMatchAdapter(
         holder.bind(match)
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<Match>() {
-        override fun areItemsTheSame(oldItem: Match, newItem: Match) =
+    class DiffCallback : DiffUtil.ItemCallback<MatchApiData>() {
+        override fun areItemsTheSame(oldItem: MatchApiData, newItem: MatchApiData) =
             oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Match, newItem: Match) =
+        override fun areContentsTheSame(oldItem: MatchApiData, newItem: MatchApiData) =
             oldItem == newItem
     }
 }

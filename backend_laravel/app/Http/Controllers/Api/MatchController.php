@@ -16,7 +16,7 @@ class MatchController extends Controller
 {
     public function index()
     {
-        $matches = Matches::all();
+        $matches = Matches::orderBy('id', 'desc')->get();
         return response()->json($matches);
     }
 
@@ -180,6 +180,44 @@ class MatchController extends Controller
         return response()->json([
             'message' => 'Berhasil subscribe',
             'data' => $subscriber
+        ]);
+    }
+
+    // Cek apakah token sudah subscribe ke match tertentu
+    public function checkSubscription(Request $request, $id)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string'
+        ]);
+
+        $subscriber = Subscriber::where('match_id', $id)
+            ->where('fcm_token', $request->fcm_token)
+            ->first();
+
+        return response()->json([
+            'is_subscribed' => $subscriber !== null,
+            'data' => $subscriber
+        ]);
+    }
+
+    public function unsubscribe(Request $request, $id)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string'
+        ]);
+
+        $deleted = Subscriber::where('fcm_token', $request->fcm_token)
+            ->where('match_id', $id)
+            ->delete();
+
+        if (!$deleted) {
+            return response()->json([
+                'message' => 'Subscriber tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Berhasil unsubscribe'
         ]);
     }
 

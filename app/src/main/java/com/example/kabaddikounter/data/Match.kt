@@ -9,5 +9,3 @@ data class Match (
     val match_time: String = "",
     val status: String = "LIVE"  // "LIVE" atau "END"
 )
-
-data class SubscribeRequest(val fcmToken: String)
