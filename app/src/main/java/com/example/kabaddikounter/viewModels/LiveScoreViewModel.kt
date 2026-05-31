@@ -1,60 +1,64 @@
 package com.example.kabaddikounter.viewModels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.kabaddikounter.data.Match
-import com.example.kabaddikounter.data.MatchRepository
-import com.google.firebase.messaging.FirebaseMessaging
+import com.example.kabaddikounter.repository.MatchRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
-class LiveScoreViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = MatchRepository()
+class LiveScoreViewModel(
+    private val repository: MatchRepository  // ← Context dihapus, pakai Repository
+) : ViewModel() {
 
-    private val _matches = MutableLiveData<List<Match>>()
-    val matches: LiveData<List<Match>> = _matches
+    // --- Score State ---
+    private val _scoreState = MutableLiveData(Match())
+    val scoreState: LiveData<Match> = _scoreState
 
-    private val _subscribedMatch = MutableLiveData<Match?>()
-    val subscribedMatch: LiveData<Match?> = _subscribedMatch
+    // --- Subscribe State ---
+    private val _isSubscribed = MutableStateFlow(false)          // ← deklarasi yang hilang
+    val isSubscribedLiveData: LiveData<Boolean> = _isSubscribed  // ← kini tersedia
+        .asStateFlow()
+        .asLiveData()
 
-    private val _error = MutableLiveData<String?>()
-    val error: LiveData<String?> = _error
+    // --- Actions ---
 
-    fun loadMatches() {
+    fun updateScore(teamA: String, teamB: String, scoreA: Int, scoreB: Int) {
         viewModelScope.launch {
-            repository.getMatches()
-                .onSuccess { _matches.value = it }
-                .onFailure { _error.value = it.message }
+            val newState = Match(
+                teamA  = teamA,
+                teamB  = teamB,
+                scoreA = scoreA,
+                scoreB = scoreB,
+                status = "LIVE"
+                // id dihapus dari sini — sebaiknya ID dari server/data source, bukan random tiap update
+            )
+            _scoreState.value = newState
+            repository.updateScore(newState)  // ← Service dipanggil dari Repository
         }
     }
 
-    fun subscribeToMatch(match: Match) {
+    fun subscribe(matchId: String) {
         viewModelScope.launch {
-
-            FirebaseMessaging.getInstance().token.await().let { token ->
-                repository.subscribeToMatch(match.id, token)
-                    .onSuccess {
-                        _subscribedMatch.value = match
-
-                    }
-                    .onFailure { _error.value = it.message }
-            }
+            repository.subscribe(matchId)
+            _isSubscribed.value = true  // ← tombol di-disable setelah subscribe
         }
     }
 
-
-    fun updateSubscribedScore(scoreA: Int, scoreB: Int, status: String) {
-        _subscribedMatch.value = _subscribedMatch.value?.copy(
-            scoreA = scoreA,
-            scoreB = scoreB,
-            status = status
-        )
+    fun stopLiveScore() {
+        viewModelScope.launch {
+            _scoreState.value = _scoreState.value?.copy(status = "END")
+            _isSubscribed.value = false
+            repository.stop()
+        }
     }
 
-    fun resetSubscription() {
-        _subscribedMatch.value = null
+    override fun onCleared() {
+        super.onCleared()
+        stopLiveScore()
     }
 }

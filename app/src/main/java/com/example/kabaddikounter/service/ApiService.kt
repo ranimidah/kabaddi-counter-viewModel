@@ -1,5 +1,8 @@
-package com.example.kabaddikounter.data
+package com.example.kabaddikounter.service
 
+import com.example.kabaddikounter.data.Match
+import com.example.kabaddikounter.data.SubscribeRequest
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -15,11 +18,11 @@ interface ApiService {
     suspend fun subscribeToMatch(
         @Path("id") matchId: String,
         @Body body: SubscribeRequest
-    ): retrofit2.Response<Unit>
+    ): Response<Unit>
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "http://YOUR_SERVER_IP:PORT/"
+    private const val BASE_URL = "http://192.168.0.12:8000/api/"
 
     val instance: ApiService by lazy {
         Retrofit.Builder()

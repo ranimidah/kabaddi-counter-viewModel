@@ -1,4 +1,4 @@
-package com.example.kabaddikounter
+package com.example.kabaddikounter.helper
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +8,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.kabaddikounter.`MainActivity-old`
+import com.example.kabaddikounter.R
 
 object LiveScoreNotificationHelper {
 

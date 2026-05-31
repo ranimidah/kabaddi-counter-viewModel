@@ -1,6 +1,7 @@
 package com.example.kabaddikounter
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
@@ -8,9 +9,11 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.kabaddikounter.viewModels.SharedViewModel
 import com.google.android.material.navigation.NavigationView
 
 /**
@@ -28,6 +31,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
+
+    private val sharedViewModel: SharedViewModel by viewModels()
+    private lateinit var navView: NavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +53,9 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         appBarConfiguration = AppBarConfiguration(
             setOf(
+                R.id.welcomeFragment,
                 R.id.homeFragment,
+                R.id.matchListFragment,
                 R.id.riwayatFragment,
                 R.id.settingsFragment
             ),
@@ -57,6 +65,20 @@ class MainActivity : AppCompatActivity() {
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setupWithNavController(navController)
 
+        navView = findViewById<NavigationView>(R.id.navigationView)
+        navView.setupWithNavController(navController)
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.welcomeFragment) {
+                // Sembunyikan toolbar di halaman welcome (opsional)
+                supportActionBar?.hide()
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            } else {
+                supportActionBar?.show()
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+            }
+        }
+
         // dark mode
         val sharedPrefs = androidx.preference.PreferenceManager
             .getDefaultSharedPreferences(this)
@@ -65,12 +87,10 @@ class MainActivity : AppCompatActivity() {
         sharedPrefs.registerOnSharedPreferenceChangeListener { prefs, key ->
             if (key == "dark_mode") applyTheme(prefs.getBoolean("dark_mode", false))
 
-
-//        // Hubungkan BottomNavigationView ke NavController secara otomatis
-//        // ID item menu di bottom_navigation_menu.xml harus sama dengan ID fragment di nav_graph
-//        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
-//        bottomNav.setupWithNavController(navController)
         }
+
+        observeRole()
+        observeDestination()
     }
 
     private fun applyTheme(isDark: Boolean) {
@@ -84,5 +104,27 @@ class MainActivity : AppCompatActivity() {
         // wajib pakai appBarConfiguration agar drawer dan back button bekerja
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
+    }
+
+    private fun observeRole() {
+        sharedViewModel.activeRole.observe(this) { role ->
+            // Ini murni UI logic — boleh di Activity
+            val menuRes = when (role) {
+                SharedViewModel.Role.ADMIN  -> R.menu.drawer_menu_admin
+                SharedViewModel.Role.VIEWER -> R.menu.drawer_menu_viewer
+                null -> R.menu.drawer_menu   // default / belum login
+            }
+            navView.menu.clear()
+            navView.inflateMenu(menuRes)
+            NavigationUI.setupWithNavController(navView, navController)
+        }
+    }
+
+    private fun observeDestination() {
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.welcomeFragment) {
+                sharedViewModel.clearRole()  // reset saat keluar
+            }
+        }
     }
 }
