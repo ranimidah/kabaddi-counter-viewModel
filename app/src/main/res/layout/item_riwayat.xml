@@ -6,7 +6,7 @@
     <data>
         <variable
             name="match"
-            type="com.example.kabaddikounter.data.MatchEntity" />
+            type="com.example.kabaddikounter.service.MatchApiData" />
         <variable
             name="isExpanded"
             type="boolean" />
@@ -46,7 +46,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{match.title}"
+                        android:text="@{match.team_a  + ` vs  ` + match.team_b}"
                         android:textColor="#2222CC"
                         android:textSize="16sp"
                         android:textStyle="bold"
@@ -56,10 +56,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="@{`Pemenang: ` + match.winner}"
+                        android:text="@{`Status: ` + match.status}"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp"
-                        tools:text="Pemenang: TIM A" />
+                        android:textSize="14sp"/>
 
                 </LinearLayout>
 
@@ -95,7 +94,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{match.teamAName + ` : ` + match.scoreA}"
+                    android:text="@{match.team_a + ` : ` + match.score_a}"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     tools:text="TIM A : 2" />
@@ -104,7 +103,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@{match.teamBName + ` : ` + match.scoreB}"
+                    android:text="@{match.team_b + ` : ` + match.score_b}"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     tools:text="TIM B : 0" />

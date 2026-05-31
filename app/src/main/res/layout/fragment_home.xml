@@ -8,6 +8,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
         <variable
             name="viewModel"
             type="com.example.kabaddikounter.viewModels.ScoreViewModel" />
@@ -28,7 +29,6 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:cardBackgroundColor="?attr/cardWhiteBackground"
-            app:layout_constraintTop_toBottomOf="@+id/switchTheme"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/cardTeamB"
             app:layout_constraintHorizontal_chainStyle="spread"
@@ -212,6 +212,35 @@
             app:iconPadding="8dp"
             app:layout_constraintTop_toBottomOf="@+id/buttonReset"
             app:layout_constraintStart_toEndOf="@+id/buttonSimpan"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+
+        <!-- Status LIVE -->
+        <TextView
+            android:id="@+id/tvLiveStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="● LIVE"
+            android:textColor="#E53935"
+            android:textSize="13sp"
+            android:layout_marginTop="12dp"
+            android:visibility="@{viewModel.currentMatch != null &amp;&amp; viewModel.currentMatch.status.equals(`LIVE`) ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toBottomOf="@+id/buttonSimpan"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Tombol End Live -->
+        <Button
+            android:id="@+id/buttonEndLive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="End Live"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#E53935"
+            android:textColor="@android:color/white"
+            android:visibility="@{viewModel.currentMatch != null &amp;&amp; viewModel.currentMatch.status.equals(`LIVE`) ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toBottomOf="@+id/tvLiveStatus"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

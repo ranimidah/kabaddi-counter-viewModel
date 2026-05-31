@@ -86,14 +86,14 @@ class HomeFragment : Fragment() {
         // Setup notifikasi live score
         setupLiveScoreNotification()
 
-//        // Aktifkan hamburger icon di Fragment
-//        val navController = findNavController()
-//        val appBarConfiguration = AppBarConfiguration(
-//            setOf(R.id.homeFragment, R.id.riwayatFragment, R.id.settingsFragment),
-//            (requireActivity() as MainActivity).findViewById(R.id.drawerLayout)
-//        )
-//        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
-//        toolbar.setupWithNavController(navController, appBarConfiguration)
+        binding.buttonEndLive.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Akhiri Match")
+                .setMessage("Yakin ingin mengakhiri pertandingan ini?")
+                .setPositiveButton("Ya") { _, _ -> viewModel.endMatch() }
+                .setNegativeButton("Batal", null)
+                .show()
+        }
     }
 
     private fun setupLiveScoreNotification() {
@@ -130,6 +130,14 @@ class HomeFragment : Fragment() {
                 scoreA = viewModel.scoreA.value ?: 0,
                 scoreB = viewModel.scoreB.value ?: 0
             )
+        }
+
+        viewModel.currentMatch.observe(viewLifecycleOwner) { match ->
+            android.util.Log.d("LOAD_MATCH", "Observer: $match")
+            if (match != null) {
+                binding.teamAName.setText(match.team_a)
+                binding.teamBName.setText(match.team_b)
+            }
         }
     }
 

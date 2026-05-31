@@ -1,6 +1,7 @@
 package com.example.kabaddikounter
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.kabaddikounter.data.Match
 import com.example.kabaddikounter.databinding.FragmentMatchListBinding
 import com.example.kabaddikounter.repository.MatchRepository
+import com.example.kabaddikounter.service.MatchApiData
 import com.example.kabaddikounter.ui.LiveMatchAdapter
 import com.example.kabaddikounter.viewModels.MatchListViewModel
 import com.example.kabaddikounter.viewModels.MatchListViewModelFactory
@@ -46,11 +48,18 @@ class MatchListFragment : Fragment() {
     private fun setupAdapter() {
         adapter = LiveMatchAdapter (
             onSubscribe = { match ->
-                if (match.id.isBlank()) {
+                if (match.id <= 0) {
                     showError("ID pertandingan tidak valid")
                     return@LiveMatchAdapter
                 }
-                viewModel.subscribeToMatch(match)
+
+                val current = viewModel.subscribedMatch.value
+                Log.d("SUBSCRIBE", "current: ${current?.id}, match: ${match.id}")
+                if (current?.id == match.id) {
+                    viewModel.unsubscribeFromMatch(match)
+                } else {
+                    viewModel.subscribeToMatch(match)
+                }
             },
             onMatchClick = { match ->
                 val action = MatchListFragmentDirections
@@ -73,13 +82,14 @@ class MatchListFragment : Fragment() {
 
         // Hasil subscribe berhasil
         viewModel.subscribedMatch.observe(viewLifecycleOwner) { match ->
-            match ?: return@observe                // abaikan kalau null (setelah reset)
-            adapter.setSubscribedMatchId(match.id)
-            Snackbar.make(
-                binding.root,
-                "Subscribe ke ${match.teamA} vs ${match.teamB} berhasil",
-                Snackbar.LENGTH_SHORT
-            ).show()
+            adapter.setSubscribedMatchId(match?.id)
+            if (match != null) {
+                Snackbar.make(
+                    binding.root,
+                    "Subscribe ke ${match.team_a} vs ${match.team_b} berhasil",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
         }
 
         // Error
@@ -90,7 +100,7 @@ class MatchListFragment : Fragment() {
         }
     }
 
-    private fun navigateToDetail(match: Match) {
+    private fun navigateToDetail(match: MatchApiData) {
         // Jika pakai Navigation Component:
         val action = MatchListFragmentDirections
             .actionMatchListToDetailMatch(matchId = match.id)

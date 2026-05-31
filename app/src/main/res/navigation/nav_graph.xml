@@ -85,8 +85,8 @@
         tools:layout="@layout/fragment_detail_match" >
         <argument
             android:name="matchId"
-            app:argType="string"
-            android:defaultValue="-1" />
+            app:argType="integer"
+            android:defaultValue="0" />
     </fragment>
 
 </navigation>

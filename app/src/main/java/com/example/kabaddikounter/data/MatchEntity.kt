@@ -8,16 +8,17 @@ data class MatchEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val title: String,
-    val teamAName: String,
-    val teamBName: String,
-    val scoreA: Int,
-    val scoreB: Int,
+    val team_a: String,
+    val team_b: String,
+    val score_a: Int,
+    val score_b: Int,
+    val status: String = "LIVE",
     val timestamp: Long = System.currentTimeMillis()
 ){
     val winner: String
         get() = when {
-            scoreA > scoreB -> teamAName
-            scoreB > scoreA -> teamBName
+            score_a > score_b -> team_a
+            score_b > score_a -> team_b
             else -> "Seri"
         }
 }
