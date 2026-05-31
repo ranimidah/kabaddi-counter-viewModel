@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import com.example.kabaddikounter.data.Match
 import com.example.kabaddikounter.databinding.FragmentMatchListBinding
 import com.example.kabaddikounter.repository.MatchRepository
 import com.example.kabaddikounter.ui.LiveMatchAdapter
@@ -42,14 +44,20 @@ class MatchListFragment : Fragment() {
     }
 
     private fun setupAdapter() {
-        adapter = LiveMatchAdapter { match ->
-            // Guard: jangan subscribe kalau id kosong
-            if (match.id.isBlank()) {
-                showError("ID pertandingan tidak valid")
-                return@LiveMatchAdapter
+        adapter = LiveMatchAdapter (
+            onSubscribe = { match ->
+                if (match.id.isBlank()) {
+                    showError("ID pertandingan tidak valid")
+                    return@LiveMatchAdapter
+                }
+                viewModel.subscribeToMatch(match)
+            },
+            onMatchClick = { match ->
+                val action = MatchListFragmentDirections
+                    .actionMatchListToDetailMatch(matchId = match.id)
+                findNavController().navigate(action)
             }
-            viewModel.subscribeToMatch(match)
-        }
+        )
         binding.rvMatches.adapter = adapter
     }
 
@@ -80,6 +88,13 @@ class MatchListFragment : Fragment() {
             binding.progressBar.isVisible = false
             showError(errorMsg)
         }
+    }
+
+    private fun navigateToDetail(match: Match) {
+        // Jika pakai Navigation Component:
+        val action = MatchListFragmentDirections
+            .actionMatchListToDetailMatch(matchId = match.id)
+        findNavController().navigate(action)
     }
 
     private fun showError(message: String) {

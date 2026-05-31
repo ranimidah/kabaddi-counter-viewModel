@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.kabaddikounter.databinding.FragmentWelcomeBinding
+import com.example.kabaddikounter.viewModels.SharedViewModel
 import com.example.kabaddikounter.viewModels.WelcomeViewModel
 
 /**
@@ -29,6 +31,7 @@ class WelcomeFragment : Fragment() {
 
     // viewModels() — scope Fragment saja, tidak perlu di-share ke Fragment lain
     private val viewModel: WelcomeViewModel by viewModels()
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     // Nullable binding, wajib null-kan di onDestroyView (sama dengan HomeFragment)
     private var _binding: FragmentWelcomeBinding? = null
@@ -58,6 +61,13 @@ class WelcomeFragment : Fragment() {
     private fun observeNavigation() {
         viewModel.navigateTo.observe(viewLifecycleOwner) { role ->
             role ?: return@observe  // null = event sudah dikonsumsi, abaikan
+
+            sharedViewModel.setRole(
+                when (role) {
+                    WelcomeViewModel.Role.ADMIN  -> SharedViewModel.Role.ADMIN
+                    WelcomeViewModel.Role.VIEWER -> SharedViewModel.Role.VIEWER
+                }
+            )
 
             val action = when (role) {
                 WelcomeViewModel.Role.ADMIN ->

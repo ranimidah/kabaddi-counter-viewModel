@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/homeFragment"
+        android:title="Home" />
+    <item
+        android:id="@+id/riwayatFragment"
+        android:title="Riwayat Match" />
+    <item
+        android:id="@+id/settingsFragment"
+        android:title="Pengaturan" />
+    <item
+        android:id="@+id/welcomeFragment"
+        android:title="Keluar" />
+</menu>

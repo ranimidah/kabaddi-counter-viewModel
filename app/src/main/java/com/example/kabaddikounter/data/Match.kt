@@ -6,6 +6,7 @@ data class Match (
     val teamB: String = "",
     val scoreA: Int = 0,
     val scoreB: Int = 0,
+    val matchTime: String = "",
     val status: String = "LIVE"  // "LIVE" atau "END"
 )
 

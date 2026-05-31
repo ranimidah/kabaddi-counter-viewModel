@@ -9,7 +9,8 @@ import com.example.kabaddikounter.data.Match
 import com.example.kabaddikounter.databinding.ItemLiveMatchBinding
 
 class LiveMatchAdapter(
-    private val onSubscribe: (Match) -> Unit
+    private val onSubscribe: (Match) -> Unit,
+    private val onMatchClick: (Match) -> Unit
 ) : ListAdapter<Match, LiveMatchAdapter.ViewHolder>(DiffCallback()) {
 
     private var subscribedMatchId: String? = null
@@ -19,17 +20,20 @@ class LiveMatchAdapter(
     }
 
     inner class ViewHolder(
-        private val binding: ItemLiveMatchBinding
+        private val binding: ItemLiveMatchBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(match: Match) {
             binding.match = match
-            binding.isSubscribed = match.id.isNotBlank() && match.id == subscribedMatchId
 
-            // Satu-satunya logika view yang tetap di Kotlin:
-            // listener tidak bisa diekspresikan di XML dengan parameter objek
+            binding.isSubscribed = match.id.isNotBlank() && match.id == subscribedMatchId
             binding.btnSubscribe.setOnClickListener {
                 if (match.id.isNotBlank()) onSubscribe(match)
+            }
+
+            // binding.isSubscribed = isSubscribed
+            binding.root.setOnClickListener {
+                onMatchClick(match)
             }
 
             binding.executePendingBindings()
