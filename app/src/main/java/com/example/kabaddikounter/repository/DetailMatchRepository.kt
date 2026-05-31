@@ -15,11 +15,11 @@ class DetailMatchRepository {
         // Simulate network/db call
         val match = Match(
             id = matchId,
-            teamA = "Tim A",
-            teamB = "Tim B",
-            scoreA = 0,
-            scoreB = 1,
-            matchTime = "10:23 WIB",
+            team_a = "Tim A",
+            team_b = "Tim B",
+            score_a = 0,
+            score_b = 1,
+            match_time = "10:23 WIB",
             status = "LIVE"
         )
         emit(match)

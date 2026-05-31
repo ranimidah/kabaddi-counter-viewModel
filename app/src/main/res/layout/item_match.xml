@@ -28,7 +28,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@{match.teamAName + ` vs ` + match.teamBName}" />
+                android:text="@{match.team_a + ` vs ` + match.team_b}" />
 
             <TextView
                 android:id="@+id/textWinner"
@@ -57,13 +57,13 @@
                 android:id="@+id/textScoreA"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{match.teamAName + ` : ` + match.scoreA}" />
+                android:text="@{match.team_a + ` : ` + match.score_a}" />
 
             <TextView
                 android:id="@+id/textScoreB"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{match.teamBName + ` : ` + match.scoreB}" />
+                android:text="@{match.team_b + ` : ` + match.score_b}" />
 
         </LinearLayout>
 

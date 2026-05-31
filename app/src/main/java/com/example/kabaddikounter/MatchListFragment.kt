@@ -77,7 +77,7 @@ class MatchListFragment : Fragment() {
             adapter.setSubscribedMatchId(match.id)
             Snackbar.make(
                 binding.root,
-                "Subscribe ke ${match.teamA} vs ${match.teamB} berhasil",
+                "Subscribe ke ${match.team_a} vs ${match.team_b} berhasil",
                 Snackbar.LENGTH_SHORT
             ).show()
         }

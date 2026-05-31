@@ -42,8 +42,8 @@ class MatchListViewModel(
 
     fun updateSubscribedScore(scoreA: Int, scoreB: Int, status: String) {
         _subscribedMatch.value = _subscribedMatch.value?.copy(
-            scoreA = scoreA,
-            scoreB = scoreB,
+            score_a = scoreA,
+            score_b = scoreB,
             status = status
         )
     }

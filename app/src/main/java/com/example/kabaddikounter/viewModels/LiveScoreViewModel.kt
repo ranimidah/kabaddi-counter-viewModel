@@ -30,10 +30,10 @@ class LiveScoreViewModel(
     fun updateScore(teamA: String, teamB: String, scoreA: Int, scoreB: Int) {
         viewModelScope.launch {
             val newState = Match(
-                teamA  = teamA,
-                teamB  = teamB,
-                scoreA = scoreA,
-                scoreB = scoreB,
+                team_a  = teamA,
+                team_b  = teamB,
+                score_a = scoreA,
+                score_b = scoreB,
                 status = "LIVE"
                 // id dihapus dari sini — sebaiknya ID dari server/data source, bukan random tiap update
             )

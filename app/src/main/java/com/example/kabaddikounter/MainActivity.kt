@@ -65,9 +65,6 @@ class MainActivity : AppCompatActivity() {
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setupWithNavController(navController)
 
-        navView = findViewById<NavigationView>(R.id.navigationView)
-        navView.setupWithNavController(navController)
-
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id == R.id.welcomeFragment) {
                 // Sembunyikan toolbar di halaman welcome (opsional)
@@ -88,6 +85,9 @@ class MainActivity : AppCompatActivity() {
             if (key == "dark_mode") applyTheme(prefs.getBoolean("dark_mode", false))
 
         }
+
+        navView = findViewById<NavigationView>(R.id.navigationView)
+        navView.setupWithNavController(navController)
 
         observeRole()
         observeDestination()

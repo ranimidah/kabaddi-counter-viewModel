@@ -74,7 +74,7 @@ class DetailMatchViewModel(
                 repository.getMatchDetail(matchId).collect { match ->
                     _match.value = match
                     _matchInfo.value =
-                        "Pertandingan pukul ${match.matchTime} ${match.teamA} melawan ${match.teamB}"
+                        "Pertandingan pukul ${match.match_time} ${match.team_a} melawan ${match.team_b}"
                 }
                 repository.getLastUpdates(matchId).collect { updates ->
                     _lastUpdates.value = updates

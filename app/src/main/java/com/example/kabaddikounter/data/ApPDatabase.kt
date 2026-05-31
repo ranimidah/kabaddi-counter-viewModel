@@ -5,21 +5,21 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [MatchEntity::class], version = 1)
+@Database(entities = [MatchEntity::class, ScoreLogEntity::class], version = 4)
 abstract class AppDatabase : RoomDatabase() {
+
     abstract fun matchDao(): MatchDao
+    abstract fun scoreLogDao(): ScoreLogDao
 
     companion object {
-        @Volatile private var INSTANCE: AppDatabase? = null
-
         fun getInstance(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "kabaddi_db"
-                ).build().also { INSTANCE = it }
-            }
+            return Room.databaseBuilder(
+                context,
+                AppDatabase::class.java,
+                "kabaddi_db"
+            )
+                .fallbackToDestructiveMigration() // hapus & buat ulang DB saat schema berubah
+                .build()
         }
     }
 }

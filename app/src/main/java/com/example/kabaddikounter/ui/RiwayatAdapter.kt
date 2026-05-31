@@ -7,8 +7,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kabaddikounter.data.MatchEntity
 import com.example.kabaddikounter.databinding.ItemRiwayatBinding
+import com.example.kabaddikounter.service.MatchApiData
 
-class RiwayatAdapter : ListAdapter<MatchEntity, RiwayatAdapter.RiwayatViewHolder>(DiffCallback()) {
+class RiwayatAdapter : ListAdapter<MatchApiData, RiwayatAdapter.RiwayatViewHolder>(DiffCallback()) {
 
     private var expandedPosition: Int = -1
 
@@ -16,7 +17,7 @@ class RiwayatAdapter : ListAdapter<MatchEntity, RiwayatAdapter.RiwayatViewHolder
         private val binding: ItemRiwayatBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(match: MatchEntity, isExpanded: Boolean) {
+        fun bind(match: MatchApiData, isExpanded: Boolean) {
             binding.match = match
             binding.isExpanded = isExpanded
             binding.executePendingBindings()
@@ -33,21 +34,21 @@ class RiwayatAdapter : ListAdapter<MatchEntity, RiwayatAdapter.RiwayatViewHolder
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RiwayatViewHolder {
         val binding = ItemRiwayatBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
+            LayoutInflater.from(parent.context), parent, false
         )
         return RiwayatViewHolder(binding)
     }
 
+    // Hapus argumen kedua (isExpanded)
     override fun onBindViewHolder(holder: RiwayatViewHolder, position: Int) {
         holder.bind(getItem(position), position == expandedPosition)
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<MatchEntity>() {
-        override fun areItemsTheSame(oldItem: MatchEntity, newItem: MatchEntity) =
+    // Ganti MatchEntity → MatchApiData di sini juga
+    class DiffCallback : DiffUtil.ItemCallback<MatchApiData>() {
+        override fun areItemsTheSame(oldItem: MatchApiData, newItem: MatchApiData) =
             oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: MatchEntity, newItem: MatchEntity) =
+        override fun areContentsTheSame(oldItem: MatchApiData, newItem: MatchApiData) =
             oldItem == newItem
     }
 }
