@@ -72,4 +72,7 @@ interface ApiService {
 
     @PUT("subscribers/update-token")  // sesuaikan endpoint dengan backend kamu
     suspend fun updateFcmToken(@Body request: UpdateTokenRequest): Response<Unit>
+
+    @GET("match/{matchId}/detail")
+    suspend fun getMatchDetail(@Path("matchId") matchId: Int): Response<MatchDetailResponse>
 }

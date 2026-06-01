@@ -8,9 +8,15 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.kabaddikounter.data.Match
+import com.example.kabaddikounter.data.MatchUpdate
 import com.example.kabaddikounter.databinding.FragmentDetailMatchBinding
+import com.example.kabaddikounter.service.MatchResponse
+import com.example.kabaddikounter.service.RetrofitClient
 import com.example.kabaddikounter.ui.LastUpdateAdapter
 import com.example.kabaddikounter.viewModels.DetailMatchViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class DetailMatchFragment : Fragment() {
     private var _binding: FragmentDetailMatchBinding? = null
@@ -85,4 +91,41 @@ class DetailMatchFragment : Fragment() {
             }
         }
     }
+
+    suspend fun getMatchDetail(matchId: Int): Flow<Match> = flow {
+        val response = RetrofitClient.apiService.getMatchDetail(matchId)
+        if (response.isSuccessful) {
+            val detail = response.body()?.data ?: throw Exception("Data kosong")
+            emit(Match(
+                id         = detail.id,
+                team_a     = detail.team_a,
+                team_b     = detail.team_b,
+                score_a    = detail.score_a,
+                score_b    = detail.score_b,
+                status     = detail.status,
+                match_time = detail.match_time
+            ))
+        } else {
+            throw Exception("Gagal memuat detail (${response.code()})")
+        }
+    }
+
+    suspend fun getLastUpdates(matchId: Int): Flow<List<MatchUpdate>> = flow {
+        val response = RetrofitClient.apiService.getMatchDetail(matchId)
+        if (response.isSuccessful) {
+            val updates = response.body()?.data?.last_updates ?: emptyList()
+            emit(updates.map { log ->
+                MatchUpdate(
+                    team    = log.team,
+                    points  = log.points,
+                    score_a = log.score_a,
+                    score_b = log.score_b,
+                    time    = log.time
+                )
+            })
+        } else {
+            throw Exception("Gagal memuat log (${response.code()})")
+        }
+    }
+
 }
