@@ -56,3 +56,8 @@ data class SubscriberData(
     val match_id: Int,
     val fcm_token: String
 )
+
+data class UpdateTokenRequest(
+    val old_token: String,
+    val new_token: String
+)

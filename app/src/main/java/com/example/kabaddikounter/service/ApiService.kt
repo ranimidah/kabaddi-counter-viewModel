@@ -69,4 +69,7 @@ interface ApiService {
         @Path("id") matchId: Int,
         @Query("fcm_token") fcmToken: String
     ): Response<CheckSubscriptionResponse>
+
+    @PUT("subscribers/update-token")  // sesuaikan endpoint dengan backend kamu
+    suspend fun updateFcmToken(@Body request: UpdateTokenRequest): Response<Unit>
 }

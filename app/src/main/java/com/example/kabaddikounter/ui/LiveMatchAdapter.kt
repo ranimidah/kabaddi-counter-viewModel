@@ -30,7 +30,6 @@ class LiveMatchAdapter(
 
             binding.isSubscribed = match.id == subscribedMatchId
             binding.btnSubscribe.setOnClickListener {
-                Log.d("SUBSCRIBE", "tombol diklik, id: ${match.id}")
                 onSubscribe(match)
             }
 

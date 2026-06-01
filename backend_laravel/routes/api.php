@@ -19,3 +19,5 @@ Route::post('/match/save', [MatchController::class, 'store']);
 Route::post('/score-logs', [ScoreLogController::class, 'store']);
 Route::get('/score-logs', [ScoreLogController::class, 'index']);
 Route::get('/match/latest', [MatchController::class, 'latest']);
+Route::put('/subscribers/update-token', [MatchController::class, 'updateToken']);
+Route::get('/match/{matchId}/detail', [MatchController::class, 'detail']);
