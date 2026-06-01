@@ -6,6 +6,7 @@ import com.example.kabaddikounter.service.LiveScoreForegroundService
 import com.example.kabaddikounter.service.MatchApiData
 import com.example.kabaddikounter.service.RetrofitClient
 import com.example.kabaddikounter.service.SubscribeRequest
+import com.example.kabaddikounter.service.UpdateTokenRequest
 
 class MatchRepository(private val context: Context) {
     private val api = RetrofitClient.apiService
@@ -40,6 +41,14 @@ class MatchRepository(private val context: Context) {
         val res = api.checkSubscription(matchId, token)
         if (res.isSuccessful) Result.success(res.body()?.is_subscribed ?: false)
         else Result.failure(Exception("Gagal cek: ${res.code()}"))
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun updateFcmToken(oldToken: String, newToken: String): Result<Unit> = try {
+        val res = api.updateFcmToken(UpdateTokenRequest(oldToken, newToken))
+        if (res.isSuccessful) Result.success(Unit)
+        else Result.failure(Exception("Update token gagal: ${res.code()}"))
     } catch (e: Exception) {
         Result.failure(e)
     }

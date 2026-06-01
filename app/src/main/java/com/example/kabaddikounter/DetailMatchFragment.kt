@@ -13,21 +13,6 @@ import com.example.kabaddikounter.ui.LastUpdateAdapter
 import com.example.kabaddikounter.viewModels.DetailMatchViewModel
 
 class DetailMatchFragment : Fragment() {
-
-    companion object {
-        private const val ARG_MATCH_ID = "match_id"
-
-        fun newInstance(matchId: String): DetailMatchFragment {
-            return DetailMatchFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_MATCH_ID, matchId)
-                }
-            }
-        }
-    }
-
-    // ── DataBinding & ViewModel ───────────────────────────────────────────────
-
     private var _binding: FragmentDetailMatchBinding? = null
     private val binding get() = _binding!!
 
@@ -57,8 +42,11 @@ class DetailMatchFragment : Fragment() {
         setupRecyclerView()
         observeViewModel()
 
-        val matchId = arguments?.getString(ARG_MATCH_ID) ?: ""
-        viewModel.loadMatch(matchId)
+        val args = DetailMatchFragmentArgs.fromBundle(requireArguments())
+        val matchId = args.matchId  // Int, dari nav_graph argument
+        if (matchId != -1) {
+            viewModel.loadMatch(matchId)
+        }
     }
 
     override fun onDestroyView() {

@@ -58,9 +58,9 @@ class DetailMatchViewModel(
 
     // ── Init ──────────────────────────────────────────────────────────────────
 
-    private var currentMatchId: String = ""
+    private var currentMatchId: Int = -1
 
-    fun loadMatch(matchId: String) {
+    fun loadMatch(matchId: Int) {
         currentMatchId = matchId
 
         // Restore persisted subscription state

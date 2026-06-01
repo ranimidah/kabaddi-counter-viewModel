@@ -1,13 +1,17 @@
 package com.example.kabaddikounter.helper
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import com.example.kabaddikounter.MainActivity
 import com.example.kabaddikounter.`MainActivity-old`
 import com.example.kabaddikounter.R
 
@@ -36,11 +40,14 @@ object LiveScoreNotificationHelper {
         teamA: String,
         teamB: String,
         scoreA: Int,
-        scoreB: Int
+        scoreB: Int,
+        matchId: Int = 0
     ) {
         // PendingIntent → buka MainActivity saat notifikasi diklik
-        val intent = Intent(context, `MainActivity-old`::class.java).apply {
+        val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("matchId", matchId)
+            putExtra("navigateTo", "detailMatchFragment")
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -71,7 +78,16 @@ object LiveScoreNotificationHelper {
             .setSilent(true)
             .setContentIntent(pendingIntent)
             .setAutoCancel(false)
+            .setContentIntent(pendingIntent)
             .build()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) return // ← tidak ada permission, batalkan
+        }
 
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
     }

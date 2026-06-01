@@ -1,5 +1,6 @@
 package com.example.kabaddikounter
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +8,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
@@ -91,7 +93,15 @@ class MainActivity : AppCompatActivity() {
 
         observeRole()
         observeDestination()
+
+        handleNotificationIntent(intent)
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
 
     private fun applyTheme(isDark: Boolean) {
         AppCompatDelegate.setDefaultNightMode(
@@ -127,4 +137,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun handleNotificationIntent(intent: Intent) {
+        val navigateTo = intent.getStringExtra("navigateTo") ?: return
+        val matchId    = intent.getIntExtra("matchId", -1)
+
+        if (navigateTo == "detailMatchFragment" && matchId != -1) {
+            val navController = findNavController(R.id.appNavHostFragment) // sesuaikan ID
+            val bundle = Bundle().apply { putInt("matchId", matchId) }
+            navController.navigate(R.id.detailMatchFragment, bundle) // sesuaikan ID nav_graph
+        }
+    }
+
 }
