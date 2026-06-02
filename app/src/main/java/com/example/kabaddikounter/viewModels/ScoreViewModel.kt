@@ -97,16 +97,6 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
         }
     }
 
-    fun endMatch() {
-        viewModelScope.launch {
-            val existing = _currentMatch.value ?: return@launch
-            // Update status jadi END di lokal (perlu tambah query di DAO)
-            matchDao.updateStatus(existing.id, "END")
-            _currentMatch.postValue(existing.copy(status = "END"))
-            _saveStatus.postValue("Match selesai!")
-        }
-    }
-
     // Room Database
     val saveStatus: LiveData<String?> get() = _saveStatus
     fun saveMatch(title: String) {
@@ -165,6 +155,33 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
                     _saveStatus.postValue("Tersimpan lokal, server tidak terjangkau")
                 }
             }
+        }
+    }
+
+    fun endMatch() {
+        viewModelScope.launch {
+            val existing = _currentMatch.value ?: return@launch
+
+            matchDao.updateStatus(existing.id, "END")
+            _currentMatch.postValue(existing.copy(status = "END"))
+
+            try {
+                val response = RetrofitClient.apiService.endMatch(existing.id)
+                if (response.isSuccessful) {
+                    _saveStatus.postValue("Match selesai!")
+                } else {
+                    _saveStatus.postValue("Match selesai (lokal), gagal ke server (${response.code()})")
+                }
+            } catch (e: Exception) {
+                _saveStatus.postValue("Match selesai (lokal), server tidak terjangkau")
+            }
+
+            // Reset semua state
+            _currentMatch.postValue(null)
+            _scoreA.postValue(0)
+            _scoreB.postValue(0)
+            teamA.postValue("Team A")
+            teamB.postValue("Team B")
         }
     }
 

@@ -25,15 +25,6 @@ object RetrofitClient {
 }
 
 interface ApiService {
-    @GET("match")
-    suspend fun getMatches(): List<Match>
-
-    @POST("match/{id}/subscribe")
-    suspend fun subscribeToMatch(
-        @Path("id") matchId: String,
-        @Body body: SubscribeRequest
-    ): Response<Unit>
-
     @POST("match/save")
     suspend fun saveMatch(@Body body: MatchRequest): Response<MatchResponse>
 
@@ -70,9 +61,12 @@ interface ApiService {
         @Query("fcm_token") fcmToken: String
     ): Response<CheckSubscriptionResponse>
 
-    @PUT("subscribers/update-token")  // sesuaikan endpoint dengan backend kamu
+    @PUT("subscribers/update-token")
     suspend fun updateFcmToken(@Body request: UpdateTokenRequest): Response<Unit>
 
     @GET("match/{matchId}/detail")
     suspend fun getMatchDetail(@Path("matchId") matchId: Int): Response<MatchDetailResponse>
+
+    @POST("match/{id}/end")
+    suspend fun endMatch(@Path("id") matchId: Int): Response<Unit>
 }
