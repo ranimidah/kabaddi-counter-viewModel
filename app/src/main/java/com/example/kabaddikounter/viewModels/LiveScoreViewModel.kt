@@ -1,84 +1,59 @@
 package com.example.kabaddikounter.viewModels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.kabaddikounter.data.Match
-import com.example.kabaddikounter.data.MatchRepository
-import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import com.example.kabaddikounter.repository.MatchRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
-data class ScoreUpdate(
-    val scoreA: Int,
-    val scoreB: Int,
-    val scoringTeam: String,
-    val status: String
-)
+class LiveScoreViewModel(
+    private val repository: MatchRepository
+) : ViewModel() {
 
-class LiveScoreViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = MatchRepository()
+    private val _scoreState = MutableLiveData(Match())
+    val scoreState: LiveData<Match> = _scoreState
 
-    private val _matches = MutableLiveData<List<Match>>()
-    val matches: LiveData<List<Match>> = _matches
+    private val _isSubscribed = MutableStateFlow(false)
+    val isSubscribedLiveData: LiveData<Boolean> = _isSubscribed
+        .asStateFlow()
+        .asLiveData()
 
-    private val _subscribedMatch = MutableLiveData<Match?>()
-    val subscribedMatch: LiveData<Match?> = _subscribedMatch
-
-    private val _error = MutableLiveData<String?>()
-    val error: LiveData<String?> = _error
-
-    init {
-        // Collect FCM score updates from companion object flow
+    fun updateScore(teamA: String, teamB: String, scoreA: Int, scoreB: Int) {
         viewModelScope.launch {
-            scoreUpdateFlow.collect { update ->
-                if (_subscribedMatch.value != null) {
-                    updateSubscribedScore(update.scoreA, update.scoreB, update.status)
-                }
-            }
+            val newState = Match(
+                team_a = teamA,
+                team_b = teamB,
+                score_a = scoreA,
+                score_b = scoreB,
+                status = "LIVE"
+            )
+            _scoreState.value = newState
+            repository.updateScore(newState)
         }
     }
 
-    fun loadMatches() {
+    fun subscribe(matchId: String) {
         viewModelScope.launch {
-            repository.getMatches()
-                .onSuccess { _matches.value = it }
-                .onFailure { _error.value = it.message }
+            repository.subscribe(matchId)
+            _isSubscribed.value = true
         }
     }
 
-    fun subscribeToMatch(match: Match) {
+    fun stopLiveScore() {
         viewModelScope.launch {
-            FirebaseMessaging.getInstance().token.await().let { token ->
-                repository.subscribeToMatch(match.id, token)
-                    .onSuccess { _subscribedMatch.value = match }
-                    .onFailure { _error.value = it.message }
-            }
+            _scoreState.value = _scoreState.value?.copy(status = "END")
+            _isSubscribed.value = false
+            repository.stop()
         }
     }
 
-    fun updateSubscribedScore(scoreA: Int, scoreB: Int, status: String) {
-        _subscribedMatch.value = _subscribedMatch.value?.copy(
-            scoreA = scoreA,
-            scoreB = scoreB,
-            status = status
-        )
-    }
-
-    fun resetSubscription() {
-        _subscribedMatch.value = null
-    }
-
-    companion object {
-        private val _scoreUpdateFlow = MutableSharedFlow<ScoreUpdate>(extraBufferCapacity = 1)
-        val scoreUpdateFlow: SharedFlow<ScoreUpdate> = _scoreUpdateFlow
-
-        fun emitScoreUpdate(update: ScoreUpdate) {
-            _scoreUpdateFlow.tryEmit(update)
-        }
+    override fun onCleared() {
+        super.onCleared()
+        stopLiveScore()
     }
 }

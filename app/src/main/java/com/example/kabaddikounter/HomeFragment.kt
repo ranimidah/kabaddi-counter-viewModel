@@ -2,7 +2,6 @@ package com.example.kabaddikounter
 
 import android.Manifest
 import android.app.AlertDialog
-import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -20,9 +18,8 @@ import android.content.pm.PackageManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import com.example.kabaddikounter.data.Match
 import com.example.kabaddikounter.databinding.FragmentHomeBinding
-import com.example.kabaddikounter.viewModels.LiveScoreViewModel
+import com.example.kabaddikounter.helper.LiveScoreNotificationHelper
 import com.example.kabaddikounter.viewModels.ScoreViewModel
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
@@ -32,24 +29,8 @@ import java.io.FileWriter
 class HomeFragment : Fragment() {
 
     private val viewModel: ScoreViewModel by activityViewModels()
-    private val liveScoreViewModel: LiveScoreViewModel by activityViewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
-    // Launcher for MatchListActivity; receives the selected match and triggers subscription
-    private val matchListLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val match: Match? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                result.data?.getParcelableExtra(MatchListActivity.EXTRA_MATCH, Match::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                result.data?.getParcelableExtra(MatchListActivity.EXTRA_MATCH)
-            }
-            match?.let { liveScoreViewModel.subscribeToMatch(it) }
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,12 +51,11 @@ class HomeFragment : Fragment() {
 
         // Subscribe button → open match list
         binding.btnOpenMatchList.setOnClickListener {
-            matchListLauncher.launch(Intent(requireActivity(), MatchListActivity::class.java))
+            startActivity(Intent(requireActivity(), MatchListActivity::class.java))
         }
 
-        // Reset button: clears subscription (if any) and resets counter to defaults
+        // Reset button
         binding.buttonReset.setOnClickListener {
-            liveScoreViewModel.resetSubscription()
             viewModel.setSubscribed(false)
             viewModel.reset()
         }
@@ -98,35 +78,18 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Observe subscription error
-        liveScoreViewModel.error.observe(viewLifecycleOwner) { error ->
-            error?.let {
-                Toast.makeText(requireContext(), "Error: $it", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Observe subscribed match → update counter and lock/unlock UI
-        liveScoreViewModel.subscribedMatch.observe(viewLifecycleOwner) { match ->
-            if (match != null) {
-                viewModel.setLiveMatchData(match.teamA, match.teamB, match.scoreA, match.scoreB)
-                viewModel.setSubscribed(true)
-
-                val statusText = if (match.status == "FINISHED") {
-                    "Pertandingan berakhir: ${match.teamA} vs ${match.teamB}"
-                } else {
-                    "Berlangganan: ${match.teamA} vs ${match.teamB}"
-                }
-                binding.tvSubscribeStatus.text = statusText
-                binding.subscribeStatusBar.visibility = View.VISIBLE
-            } else {
-                viewModel.setSubscribed(false)
-                binding.subscribeStatusBar.visibility = View.GONE
-            }
-        }
-
         // Update live score notification whenever counter changes
         viewModel.scoreA.observe(viewLifecycleOwner) { updateLiveScoreNotification() }
         viewModel.scoreB.observe(viewLifecycleOwner) { updateLiveScoreNotification() }
+
+        binding.buttonEndLive.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Akhiri Match")
+                .setMessage("Yakin ingin mengakhiri pertandingan ini?")
+                .setPositiveButton("Ya") { _, _ -> viewModel.endMatch() }
+                .setNegativeButton("Batal", null)
+                .show()
+        }
     }
 
     private fun updateLiveScoreNotification() {
@@ -150,6 +113,13 @@ class HomeFragment : Fragment() {
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                     100
                 )
+            }
+        }
+
+        viewModel.currentMatch.observe(viewLifecycleOwner) { match ->
+            if (match != null) {
+                binding.teamAName.setText(match.team_a)
+                binding.teamBName.setText(match.team_b)
             }
         }
     }

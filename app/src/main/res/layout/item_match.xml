@@ -1,95 +1,71 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="3dp"
-    app:cardBackgroundColor="@android:color/white">
+<!-- res/layout/item_match.xml -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="match"
+            type="com.example.kabaddikounter.data.MatchEntity" />
+        <variable
+            name="isExpanded"
+            type="Boolean" />
+    </data>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header row: judul + chevron -->
+        <!-- Header -->
         <LinearLayout
             android:id="@+id/layoutHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:gravity="center_vertical">
+            android:orientation="horizontal">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/textTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:text="@{match.team_a + ` vs ` + match.team_b}" />
 
-                <TextView
-                    android:id="@+id/textTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A" />
-
-                <TextView
-                    android:id="@+id/textWinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="13sp"
-                    android:textColor="#666666"
-                    android:layout_marginTop="2dp" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/textWinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{`Pemenang: ` + match.winner}" />
 
             <ImageView
                 android:id="@+id/iconChevron"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_chevron_down"
-                android:contentDescription="expand" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:rotation="@{isExpanded ? 180f : 0f}"
+                app:srcCompat="@drawable/ic_chevron_down" />
 
         </LinearLayout>
 
-        <!-- Detail section (collapsed by default) -->
+        <!-- Detail -->
         <LinearLayout
             android:id="@+id/layoutDetail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone"
-            android:background="#EEF0FB"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Skor total"
-                android:textSize="13sp"
-                android:textColor="#888888" />
+            android:visibility="@{isExpanded ? android.view.View.VISIBLE : android.view.View.GONE}">
 
             <TextView
                 android:id="@+id/textScoreA"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="#1A1A1A"
-                android:layout_marginTop="4dp" />
+                android:text="@{match.team_a + ` : ` + match.score_a}" />
 
             <TextView
                 android:id="@+id/textScoreB"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="#1A1A1A"
-                android:layout_marginTop="2dp" />
+                android:text="@{match.team_b + ` : ` + match.score_b}" />
 
         </LinearLayout>
 
     </LinearLayout>
-
-</androidx.cardview.widget.CardView>
+</layout>

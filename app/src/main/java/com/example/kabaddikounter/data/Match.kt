@@ -5,12 +5,25 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Match(
-    val id: String,
-    val teamA: String,
-    val teamB: String,
-    val scoreA: Int,
-    val scoreB: Int,
-    val status: String
+    val id: Int = 1,
+    val team_a: String = "",
+    val team_b: String = "",
+    val score_a: Int = 0,
+    val score_b: Int = 0,
+    val match_time: String = "",
+    val status: String = "LIVE"
 ) : Parcelable
+
+data class MatchUpdate(
+    val id: Int = 1,
+    val team: String = "",
+    val points: Int = 0,
+    val score_a: Int = 0,
+    val score_b: Int = 0,
+    val time: String = "",
+) {
+    val description: String
+        get() = "$team +$points poin — Skor: $score_a : $score_b ($time)"
+}
 
 data class SubscribeRequest(val fcmToken: String)
