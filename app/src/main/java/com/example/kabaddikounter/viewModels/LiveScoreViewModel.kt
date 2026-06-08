@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LiveScoreViewModel(
-    private val repository: MatchRepository  // ← Context dihapus, pakai Repository
+    private val repository: MatchRepository
 ) : ViewModel() {
 
     // --- Score State ---
@@ -20,8 +20,8 @@ class LiveScoreViewModel(
     val scoreState: LiveData<Match> = _scoreState
 
     // --- Subscribe State ---
-    private val _isSubscribed = MutableStateFlow(false)          // ← deklarasi yang hilang
-    val isSubscribedLiveData: LiveData<Boolean> = _isSubscribed  // ← kini tersedia
+    private val _isSubscribed = MutableStateFlow(false)
+    val isSubscribedLiveData: LiveData<Boolean> = _isSubscribed
         .asStateFlow()
         .asLiveData()
 
@@ -60,5 +60,14 @@ class LiveScoreViewModel(
     override fun onCleared() {
         super.onCleared()
         stopLiveScore()
+    }
+
+    companion object {
+        private val _scoreUpdateFlow = MutableSharedFlow<ScoreUpdate>(extraBufferCapacity = 1)
+        val scoreUpdateFlow: SharedFlow<ScoreUpdate> = _scoreUpdateFlow
+
+        fun emitScoreUpdate(update: ScoreUpdate) {
+            _scoreUpdateFlow.tryEmit(update)
+        }
     }
 }

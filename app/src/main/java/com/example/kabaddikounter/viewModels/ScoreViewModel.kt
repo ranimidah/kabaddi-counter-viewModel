@@ -19,12 +19,11 @@ import com.example.kabaddikounter.service.RetrofitClient
 import com.example.kabaddikounter.service.ScoreLogRequest
 import com.example.kabaddikounter.service.UpdateScoreRequest
 
-
-class ScoreViewModel(application: Application) : AndroidViewModel(application){
+class ScoreViewModel(application: Application) : AndroidViewModel(application) {
     val teamA = MutableLiveData("Team A")
     val teamB = MutableLiveData("Team B")
 
-    val textExample =  MutableLiveData<String>("test")
+    val textExample = MutableLiveData<String>("test")
 
     private val _scoreA = MutableLiveData<Int>(0)
     val scoreA: LiveData<Int>
@@ -64,8 +63,21 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
     }
 
     fun reset() {
-        _scoreA.value = 0;
-        _scoreB.value = 0;
+        _scoreA.value = 0
+        _scoreB.value = 0
+        teamA.value = "Team A"
+        teamB.value = "Team B"
+    }
+
+    fun setSubscribed(subscribed: Boolean) {
+        _isSubscribed.value = subscribed
+    }
+
+    fun setLiveMatchData(teamA: String, teamB: String, scoreA: Int, scoreB: Int) {
+        this.teamA.value = teamA
+        this.teamB.value = teamB
+        _scoreA.value = scoreA
+        _scoreB.value = scoreB
     }
 
     // score subsribe
@@ -91,8 +103,8 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
         .asLiveData()
 
-    fun toggleTheme(isDark: Boolean){
-        viewModelScope.launch{
+    fun toggleTheme(isDark: Boolean) {
+        viewModelScope.launch {
             prefs.saveTheme(isDark)
         }
     }
@@ -187,10 +199,8 @@ class ScoreViewModel(application: Application) : AndroidViewModel(application){
 
     fun clearSaveStatus() { _saveStatus.value = null }
 
-
     suspend fun getAllMatches(): List<MatchEntity> {
-        // akses DAO langsung
-         return matchDao.getAllMatchesOnce()
+        return matchDao.getAllMatchesOnce()
     }
 
     // get history matchs

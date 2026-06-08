@@ -17,9 +17,9 @@ import com.example.kabaddikounter.R
 
 object LiveScoreNotificationHelper {
 
-    private const val CHANNEL_ID = "live_score_channel"
+    const val CHANNEL_ID = "live_score_channel"
     private const val CHANNEL_NAME = "Live Score"
-    private const val NOTIFICATION_ID = 1001
+    const val NOTIFICATION_ID = 1001
 
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -35,7 +35,7 @@ object LiveScoreNotificationHelper {
         }
     }
 
-    fun showLiveScore(
+    fun buildNotification(
         context: Context,
         teamA: String,
         teamB: String,
@@ -58,28 +58,28 @@ object LiveScoreNotificationHelper {
 
         val teamALabel = teamA.ifBlank { "Tim A" }
         val teamBLabel = teamB.ifBlank { "Tim B" }
+        val statusText = when {
+            scoreA > scoreB -> "$teamALabel sedang unggul!"
+            scoreB > scoreA -> "$teamBLabel sedang unggul!"
+            else -> "Skor seri!"
+        }
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_save) // ganti dengan ikon scorecard jika ada
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_save)
             .setContentTitle("⚡ Live Score Kabaddi")
             .setContentText("$teamALabel $scoreA — $scoreB $teamBLabel")
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText(
-                        "$teamALabel vs $teamBLabel\n" +
-                                "Skor: $scoreA  —  $scoreB\n" +
-                                if (scoreA > scoreB) "$teamALabel sedang unggul!"
-                                else if (scoreB > scoreA) "$teamBLabel sedang unggul!"
-                                else "Skor seri!"
-                    )
+                    .bigText("$teamALabel vs $teamBLabel\nSkor: $scoreA  —  $scoreB\n$statusText")
             )
-            .setOngoing(true)          // tidak bisa di-swipe hilang
-            .setOnlyAlertOnce(true)    // tidak bunyi/getar di setiap update
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
             .setSilent(true)
             .setContentIntent(pendingIntent)
             .setAutoCancel(false)
             .setContentIntent(pendingIntent)
             .build()
+    }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
