@@ -12,40 +12,35 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LiveScoreViewModel(
-    private val repository: MatchRepository  // ← Context dihapus, pakai Repository
+    private val repository: MatchRepository
 ) : ViewModel() {
 
-    // --- Score State ---
     private val _scoreState = MutableLiveData(Match())
     val scoreState: LiveData<Match> = _scoreState
 
-    // --- Subscribe State ---
-    private val _isSubscribed = MutableStateFlow(false)          // ← deklarasi yang hilang
-    val isSubscribedLiveData: LiveData<Boolean> = _isSubscribed  // ← kini tersedia
+    private val _isSubscribed = MutableStateFlow(false)
+    val isSubscribedLiveData: LiveData<Boolean> = _isSubscribed
         .asStateFlow()
         .asLiveData()
-
-    // --- Actions ---
 
     fun updateScore(teamA: String, teamB: String, scoreA: Int, scoreB: Int) {
         viewModelScope.launch {
             val newState = Match(
-                team_a  = teamA,
-                team_b  = teamB,
+                team_a = teamA,
+                team_b = teamB,
                 score_a = scoreA,
                 score_b = scoreB,
                 status = "LIVE"
-                // id dihapus dari sini — sebaiknya ID dari server/data source, bukan random tiap update
             )
             _scoreState.value = newState
-            repository.updateScore(newState)  // ← Service dipanggil dari Repository
+            repository.updateScore(newState)
         }
     }
 
     fun subscribe(matchId: String) {
         viewModelScope.launch {
             repository.subscribe(matchId)
-            _isSubscribed.value = true  // ← tombol di-disable setelah subscribe
+            _isSubscribed.value = true
         }
     }
 

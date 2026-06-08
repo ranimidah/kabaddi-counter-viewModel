@@ -1,5 +1,6 @@
 package com.example.kabaddikounter
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -70,5 +71,9 @@ class MatchListActivity : AppCompatActivity() {
         viewModel.error.observe(this) { message ->
             message?.let { Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
         }
+    }
+
+    companion object {
+        const val EXTRA_MATCH = "extra_match"
     }
 }

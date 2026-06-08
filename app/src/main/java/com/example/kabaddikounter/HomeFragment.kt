@@ -15,15 +15,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import android.content.pm.PackageManager
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupWithNavController
 import com.example.kabaddikounter.databinding.FragmentHomeBinding
 import com.example.kabaddikounter.helper.LiveScoreNotificationHelper
 import com.example.kabaddikounter.viewModels.ScoreViewModel
@@ -32,20 +26,8 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileWriter
 
-/**
- * HomeFragment menggantikan logika counter yang sebelumnya ada di MainActivity.
- *
- * Poin penting MVVM:
- * - activityViewModels() → ViewModel di-share dengan Activity dan Fragment lain.
- *   Ini memungkinkan RiwayatFragment juga bisa observe data yang sama.
- * - DataBinding tetap bekerja persis seperti sebelumnya (binding.viewModel = viewModel).
- * - Fragment tidak perlu tahu tentang navigasi ke Riwayat/Settings —
- *   itu urusan DrawerLayout yang sudah di-handle NavController di MainActivity.
- */
 class HomeFragment : Fragment() {
 
-    // activityViewModels() = ViewModel hidup selama Activity hidup,
-    // bisa di-share antar Fragment dalam satu Activity
     private val viewModel: ScoreViewModel by activityViewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -55,7 +37,6 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // DataBinding setup — sama persis dengan sebelumnya
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -65,17 +46,23 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Tombol Simpan Match
-        binding.buttonSimpan.setOnClickListener {
-            showSaveDialog()
+        setupNotificationPermission()
+        LiveScoreNotificationHelper.createChannel(requireContext())
+
+        // Subscribe button → open match list
+        binding.btnOpenMatchList.setOnClickListener {
+            startActivity(Intent(requireActivity(), MatchListActivity::class.java))
         }
 
-        // Observer status simpan
-        viewModel.saveStatus.observe(viewLifecycleOwner) { status ->
-            status?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                viewModel.clearSaveStatus()
-            }
+        // Reset button
+        binding.buttonReset.setOnClickListener {
+            viewModel.setSubscribed(false)
+            viewModel.reset()
+        }
+
+        // Simpan match
+        binding.buttonSimpan.setOnClickListener {
+            showSaveDialog()
         }
 
         // Export JSON
@@ -83,8 +70,17 @@ class HomeFragment : Fragment() {
             exportMatchToJson()
         }
 
-        // Setup notifikasi live score
-        setupLiveScoreNotification()
+        // Observe save status
+        viewModel.saveStatus.observe(viewLifecycleOwner) { status ->
+            status?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                viewModel.clearSaveStatus()
+            }
+        }
+
+        // Update live score notification whenever counter changes
+        viewModel.scoreA.observe(viewLifecycleOwner) { updateLiveScoreNotification() }
+        viewModel.scoreB.observe(viewLifecycleOwner) { updateLiveScoreNotification() }
 
         binding.buttonEndLive.setOnClickListener {
             AlertDialog.Builder(requireContext())
@@ -96,9 +92,17 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun setupLiveScoreNotification() {
-        LiveScoreNotificationHelper.createChannel(requireContext())
+    private fun updateLiveScoreNotification() {
+        LiveScoreNotificationHelper.showLiveScore(
+            context = requireContext(),
+            teamA = viewModel.teamA.value ?: "",
+            teamB = viewModel.teamB.value ?: "",
+            scoreA = viewModel.scoreA.value ?: 0,
+            scoreB = viewModel.scoreB.value ?: 0
+        )
+    }
 
+    private fun setupNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     requireContext(), Manifest.permission.POST_NOTIFICATIONS
@@ -112,28 +116,7 @@ class HomeFragment : Fragment() {
             }
         }
 
-        viewModel.scoreA.observe(viewLifecycleOwner) {
-            LiveScoreNotificationHelper.showLiveScore(
-                context = requireContext(),
-                teamA = viewModel.teamA.value ?: "",
-                teamB = viewModel.teamB.value ?: "",
-                scoreA = viewModel.scoreA.value ?: 0,
-                scoreB = viewModel.scoreB.value ?: 0
-            )
-        }
-
-        viewModel.scoreB.observe(viewLifecycleOwner) {
-            LiveScoreNotificationHelper.showLiveScore(
-                context = requireContext(),
-                teamA = viewModel.teamA.value ?: "",
-                teamB = viewModel.teamB.value ?: "",
-                scoreA = viewModel.scoreA.value ?: 0,
-                scoreB = viewModel.scoreB.value ?: 0
-            )
-        }
-
         viewModel.currentMatch.observe(viewLifecycleOwner) { match ->
-            android.util.Log.d("LOAD_MATCH", "Observer: $match")
             if (match != null) {
                 binding.teamAName.setText(match.team_a)
                 binding.teamBName.setText(match.team_b)
@@ -202,6 +185,6 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         LiveScoreNotificationHelper.cancelNotification(requireContext())
-        _binding = null // Wajib untuk mencegah memory leak di Fragment
+        _binding = null
     }
 }
