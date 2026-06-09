@@ -62,12 +62,12 @@ class LiveScoreViewModel(
         stopLiveScore()
     }
 
-    companion object {
-        private val _scoreUpdateFlow = MutableSharedFlow<ScoreUpdate>(extraBufferCapacity = 1)
-        val scoreUpdateFlow: SharedFlow<ScoreUpdate> = _scoreUpdateFlow
-
-        fun emitScoreUpdate(update: ScoreUpdate) {
-            _scoreUpdateFlow.tryEmit(update)
-        }
-    }
+//    companion object {
+//        private val _scoreUpdateFlow = MutableSharedFlow<ScoreUpdate>(extraBufferCapacity = 1)
+//        val scoreUpdateFlow: SharedFlow<ScoreUpdate> = _scoreUpdateFlow
+//
+//        fun emitScoreUpdate(update: ScoreUpdate) {
+//            _scoreUpdateFlow.tryEmit(update)
+//        }
+//    }
 }

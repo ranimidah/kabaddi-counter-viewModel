@@ -52,5 +52,12 @@ class MatchListWidget : AppWidgetProvider() {
 
             manager.updateAppWidget(widgetId, views)
         }
+
+        fun sendRefreshBroadcast(context: Context) {
+            val intent = Intent(context, MatchListWidget::class.java).apply {
+                action = ACTION_REFRESH
+            }
+            context.sendBroadcast(intent)
+        }
     }
 }

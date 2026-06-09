@@ -25,6 +25,9 @@ class MatchListViewModel(
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
+    private val _subscribeEvent = MutableLiveData<MatchApiData?>()
+    val subscribeEvent: LiveData<MatchApiData?> = _subscribeEvent
+
     fun loadMatches() {
         viewModelScope.launch {
             repository.getMatches()
@@ -40,7 +43,11 @@ class MatchListViewModel(
         viewModelScope.launch {
             val token = FirebaseMessaging.getInstance().token.await()
             repository.subscribeToMatch(match.id, token)
-                .onSuccess { _subscribedMatch.value = match }
+                .onSuccess {
+                    _subscribedMatch.value = match
+                    _subscribeEvent.value = match   // trigger snackbar
+                    _subscribeEvent.value = null    // reset setelah dikonsumsi
+                }
                 .onFailure { _error.value = it.message }
         }
     }
@@ -49,7 +56,10 @@ class MatchListViewModel(
         viewModelScope.launch {
             val token = FirebaseMessaging.getInstance().token.await()
             repository.unsubscribeFromMatch(match.id, token)
-                .onSuccess { _subscribedMatch.value = null }
+                .onSuccess {
+                    _subscribedMatch.value = null
+                    _subscribeEvent.value = null
+                }
                 .onFailure { _error.value = it.message }
         }
     }

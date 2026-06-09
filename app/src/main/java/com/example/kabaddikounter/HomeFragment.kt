@@ -2,7 +2,6 @@ package com.example.kabaddikounter
 
 import android.Manifest
 import android.app.AlertDialog
-import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -12,15 +11,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import android.content.pm.PackageManager
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import com.example.kabaddikounter.data.Match
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupWithNavController
 import com.example.kabaddikounter.databinding.FragmentHomeBinding
 import com.example.kabaddikounter.helper.LiveScoreNotificationHelper
 import com.example.kabaddikounter.viewModels.ScoreViewModel
@@ -29,33 +32,31 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileWriter
 
+/**
+ * HomeFragment menggantikan logika counter yang sebelumnya ada di MainActivity.
+ *
+ * Poin penting MVVM:
+ * - activityViewModels() → ViewModel di-share dengan Activity dan Fragment lain.
+ *   Ini memungkinkan RiwayatFragment juga bisa observe data yang sama.
+ * - DataBinding tetap bekerja persis seperti sebelumnya (binding.viewModel = viewModel).
+ * - Fragment tidak perlu tahu tentang navigasi ke Riwayat/Settings —
+ *   itu urusan DrawerLayout yang sudah di-handle NavController di MainActivity.
+ */
 class HomeFragment : Fragment() {
 
+    // activityViewModels() = ViewModel hidup selama Activity hidup,
+    // bisa di-share antar Fragment dalam satu Activity
     private val viewModel: ScoreViewModel by activityViewModels()
-    private val liveScoreViewModel: LiveScoreViewModel by activityViewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
-    // Launcher for MatchListActivity; receives the selected match and triggers subscription
-    private val matchListLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val match: Match? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                result.data?.getParcelableExtra(MatchListActivity.EXTRA_MATCH, Match::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                result.data?.getParcelableExtra(MatchListActivity.EXTRA_MATCH)
-            }
-            match?.let { liveScoreViewModel.subscribeToMatch(it) }
-        }
-    }
+    private var isFirstLoad = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // DataBinding setup — sama persis dengan sebelumnya
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -65,24 +66,17 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupNotificationPermission()
-        LiveScoreNotificationHelper.createChannel(requireContext())
-
-        // Subscribe button → open match list
-        binding.btnOpenMatchList.setOnClickListener {
-            matchListLauncher.launch(Intent(requireActivity(), MatchListActivity::class.java))
-        }
-
-        // Reset button: clears subscription (if any) and resets counter to defaults
-        binding.buttonReset.setOnClickListener {
-            liveScoreViewModel.resetSubscription()
-            viewModel.setSubscribed(false)
-            viewModel.reset()
-        }
-
-        // Simpan match
+        // Tombol Simpan Match
         binding.buttonSimpan.setOnClickListener {
             showSaveDialog()
+        }
+
+        // Observer status simpan
+        viewModel.saveStatus.observe(viewLifecycleOwner) { status ->
+            status?.let {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                viewModel.clearSaveStatus()
+            }
         }
 
         // Export JSON
@@ -90,12 +84,17 @@ class HomeFragment : Fragment() {
             exportMatchToJson()
         }
 
-        // Observe save status
-        viewModel.saveStatus.observe(viewLifecycleOwner) { status ->
-            status?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                viewModel.clearSaveStatus()
+        // Setup notifikasi live score
+//        setupLiveScoreNotification()
+
+        viewModel.currentMatch.observe(viewLifecycleOwner) { match ->
+            android.util.Log.d("LOAD_MATCH", "Observer: $match")
+            if (match != null) {
+                binding.teamAName.setText(match.team_a)
+                binding.teamBName.setText(match.team_b)
             }
+
+            isFirstLoad = false
         }
 
         binding.buttonEndLive.setOnClickListener {
@@ -108,58 +107,57 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun updateLiveScoreNotification() {
-        LiveScoreNotificationHelper.showLiveScore(
-            context = requireContext(),
-            teamA = viewModel.teamA.value ?: "",
-            teamB = viewModel.teamB.value ?: "",
-            scoreA = viewModel.scoreA.value ?: 0,
-            scoreB = viewModel.scoreB.value ?: 0
-        )
-    }
-
-    private fun setupNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(), Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    100
-                )
-            }
-        }
-
-        viewModel.scoreA.observe(viewLifecycleOwner) {
-            LiveScoreNotificationHelper.showLiveScore(
-                context = requireContext(),
-                teamA = viewModel.teamA.value ?: "",
-                teamB = viewModel.teamB.value ?: "",
-                scoreA = viewModel.scoreA.value ?: 0,
-                scoreB = viewModel.scoreB.value ?: 0
-            )
-        }
-
-        viewModel.scoreB.observe(viewLifecycleOwner) {
-            LiveScoreNotificationHelper.showLiveScore(
-                context = requireContext(),
-                teamA = viewModel.teamA.value ?: "",
-                teamB = viewModel.teamB.value ?: "",
-                scoreA = viewModel.scoreA.value ?: 0,
-                scoreB = viewModel.scoreB.value ?: 0
-            )
-        }
-
-        viewModel.currentMatch.observe(viewLifecycleOwner) { match ->
-            android.util.Log.d("LOAD_MATCH", "Observer: $match")
-            if (match != null) {
-                binding.teamAName.setText(match.team_a)
-                binding.teamBName.setText(match.team_b)
-            }
-        }
-    }
+//    private fun setupLiveScoreNotification() {
+//        LiveScoreNotificationHelper.createChannel(requireContext())
+//
+////        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+////            if (ContextCompat.checkSelfPermission(
+////                    requireContext(), Manifest.permission.POST_NOTIFICATIONS
+////                ) != PackageManager.PERMISSION_GRANTED
+////            ) {
+////                ActivityCompat.requestPermissions(
+////                    requireActivity(),
+////                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+////                    100
+////                )
+////            }
+////        }
+//
+//        viewModel.scoreA.observe(viewLifecycleOwner) {
+//            if (!isFirstLoad) {
+//                LiveScoreNotificationHelper.showLiveScore(
+//                    context = requireContext(),
+//                    teamA = viewModel.teamA.value ?: "",
+//                    teamB = viewModel.teamB.value ?: "",
+//                    scoreA = viewModel.scoreA.value ?: 0,
+//                    scoreB = viewModel.scoreB.value ?: 0
+//                )
+//            }
+//        }
+//
+//        viewModel.scoreB.observe(viewLifecycleOwner) {
+//            if (!isFirstLoad) {
+//                LiveScoreNotificationHelper.showLiveScore(
+//                    context = requireContext(),
+//                    teamA = viewModel.teamA.value ?: "",
+//                    teamB = viewModel.teamB.value ?: "",
+//                    scoreA = viewModel.scoreA.value ?: 0,
+//                    scoreB = viewModel.scoreB.value ?: 0
+//                )
+//            }
+//        }
+//
+//        viewModel.currentMatch.observe(viewLifecycleOwner) { match ->
+//            android.util.Log.d("LOAD_MATCH", "Observer: $match")
+//            if (match != null) {
+//                binding.teamAName.setText(match.team_a)
+//                binding.teamBName.setText(match.team_b)
+//            }
+//
+//            isFirstLoad = false
+//        }
+//
+//    }
 
     private fun showSaveDialog() {
         val editText = EditText(requireContext()).apply {
@@ -222,6 +220,6 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         LiveScoreNotificationHelper.cancelNotification(requireContext())
-        _binding = null
+        _binding = null // Wajib untuk mencegah memory leak di Fragment
     }
 }

@@ -7,7 +7,8 @@ import android.graphics.Color
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.example.kabaddikounter.data.Match
-import com.example.kabaddikounter.data.MatchRepository
+import com.example.kabaddikounter.repository.MatchRepository
+import com.example.kabaddikounter.service.MatchApiData
 import kotlinx.coroutines.runBlocking
 
 class MatchListWidgetService : RemoteViewsService() {
@@ -20,8 +21,8 @@ class MatchListRemoteViewsFactory(
     private val context: Context
 ) : RemoteViewsService.RemoteViewsFactory {
 
-    private var matches: List<Match> = emptyList()
-    private val repository = MatchRepository()
+    private var matches: List<MatchApiData> = emptyList()
+    private val repository = MatchRepository(context)
 
     override fun onCreate() {}
 
@@ -40,8 +41,8 @@ class MatchListRemoteViewsFactory(
     override fun getViewAt(position: Int): RemoteViews {
         val match = matches[position]
         return RemoteViews(context.packageName, R.layout.widget_match_list_item).apply {
-            setTextViewText(R.id.tvTeams, "${match.teamA} vs ${match.teamB}")
-            setTextViewText(R.id.tvScore, "${match.scoreA}  —  ${match.scoreB}")
+            setTextViewText(R.id.tvTeams, "${match.team_a} vs ${match.team_b}")
+            setTextViewText(R.id.tvScore, "${match.score_a}  —  ${match.score_b}")
             setTextViewText(R.id.tvStatus, match.status)
             if (match.status == "LIVE") {
                 setTextColor(R.id.tvStatus, Color.parseColor("#FF4444"))

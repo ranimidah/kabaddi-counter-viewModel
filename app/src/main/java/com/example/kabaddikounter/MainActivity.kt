@@ -1,11 +1,16 @@
 package com.example.kabaddikounter
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -15,6 +20,8 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.kabaddikounter.helper.LiveScoreNotificationHelper
+import com.example.kabaddikounter.viewModels.ScoreViewModel
 import com.example.kabaddikounter.viewModels.SharedViewModel
 import com.google.android.material.navigation.NavigationView
 
@@ -36,6 +43,9 @@ class MainActivity : AppCompatActivity() {
 
     private val sharedViewModel: SharedViewModel by viewModels()
     private lateinit var navView: NavigationView
+    private val scoreViewModel: ScoreViewModel by viewModels()
+    private var isFirstLoad = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,6 +105,8 @@ class MainActivity : AppCompatActivity() {
         observeDestination()
 
         handleNotificationIntent(intent)
+        requestNotificationPermission()
+        setupLiveScoreNotification()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -118,7 +130,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeRole() {
         sharedViewModel.activeRole.observe(this) { role ->
-            // Ini murni UI logic — boleh di Activity
             val menuRes = when (role) {
                 SharedViewModel.Role.ADMIN  -> R.menu.drawer_menu_admin
                 SharedViewModel.Role.VIEWER -> R.menu.drawer_menu_viewer
@@ -143,10 +154,58 @@ class MainActivity : AppCompatActivity() {
         val matchId    = intent.getIntExtra("matchId", -1)
 
         if (navigateTo == "detailMatchFragment" && matchId != -1) {
-            val navController = findNavController(R.id.appNavHostFragment) // sesuaikan ID
+            val navController = findNavController(R.id.appNavHostFragment)
             val bundle = Bundle().apply { putInt("matchId", matchId) }
-            navController.navigate(R.id.detailMatchFragment, bundle) // sesuaikan ID nav_graph
+            navController.navigate(R.id.detailMatchFragment, bundle)
         }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    100
+                )
+            }
+        }
+    }
+
+    private fun setupLiveScoreNotification() {
+        LiveScoreNotificationHelper.createChannel(this)
+
+        scoreViewModel.currentMatch.observe(this) {
+            isFirstLoad = false
+        }
+
+        scoreViewModel.scoreA.observe(this) {
+            if (!isFirstLoad) {
+                LiveScoreNotificationHelper.showLiveScore(
+                    context = this,
+                    teamA = scoreViewModel.teamA.value ?: "",
+                    teamB = scoreViewModel.teamB.value ?: "",
+                    scoreA = scoreViewModel.scoreA.value ?: 0,
+                    scoreB = scoreViewModel.scoreB.value ?: 0
+                )
+            }
+        }
+
+        scoreViewModel.scoreB.observe(this) {
+            if (!isFirstLoad) {
+                LiveScoreNotificationHelper.showLiveScore(
+                    context = this,
+                    teamA = scoreViewModel.teamA.value ?: "",
+                    teamB = scoreViewModel.teamB.value ?: "",
+                    scoreA = scoreViewModel.scoreA.value ?: 0,
+                    scoreB = scoreViewModel.scoreB.value ?: 0
+                )
+            }
+        }
+
     }
 
 }

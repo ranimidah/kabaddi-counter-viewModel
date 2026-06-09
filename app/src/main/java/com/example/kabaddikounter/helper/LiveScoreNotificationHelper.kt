@@ -12,30 +12,30 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.kabaddikounter.MainActivity
-import com.example.kabaddikounter.`MainActivity-old`
 import com.example.kabaddikounter.R
 
 object LiveScoreNotificationHelper {
 
-    const val CHANNEL_ID = "live_score_channel"
+    private const val CHANNEL_ID = "live_score_channel"
     private const val CHANNEL_NAME = "Live Score"
-    const val NOTIFICATION_ID = 1001
+    private const val NOTIFICATION_ID = 1001
 
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_LOW // LOW agar tidak bunyi tiap update
+                NotificationManager.IMPORTANCE_DEFAULT // LOW agar tidak bunyi tiap update
             ).apply {
                 description = "Menampilkan skor pertandingan secara live"
+                enableVibration(true)
             }
             val manager = context.getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
+            manager?.createNotificationChannel(channel)
         }
     }
 
-    fun buildNotification(
+    fun showLiveScore(
         context: Context,
         teamA: String,
         teamB: String,
@@ -58,28 +58,28 @@ object LiveScoreNotificationHelper {
 
         val teamALabel = teamA.ifBlank { "Tim A" }
         val teamBLabel = teamB.ifBlank { "Tim B" }
-        val statusText = when {
-            scoreA > scoreB -> "$teamALabel sedang unggul!"
-            scoreB > scoreA -> "$teamBLabel sedang unggul!"
-            else -> "Skor seri!"
-        }
 
-        return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_save)
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_save) // ganti dengan ikon scorecard jika ada
             .setContentTitle("⚡ Live Score Kabaddi")
             .setContentText("$teamALabel $scoreA — $scoreB $teamBLabel")
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText("$teamALabel vs $teamBLabel\nSkor: $scoreA  —  $scoreB\n$statusText")
+                    .bigText(
+                        "$teamALabel vs $teamBLabel\n" +
+                                "Skor: $scoreA  —  $scoreB\n" +
+                                if (scoreA > scoreB) "$teamALabel sedang unggul!"
+                                else if (scoreB > scoreA) "$teamBLabel sedang unggul!"
+                                else "Skor seri!"
+                    )
             )
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setSilent(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setOngoing(true)          // tidak bisa di-swipe hilang
+            .setOnlyAlertOnce(false)    // tidak bunyi/getar di setiap update
+            .setSilent(false)
             .setContentIntent(pendingIntent)
             .setAutoCancel(false)
-            .setContentIntent(pendingIntent)
             .build()
-    }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(

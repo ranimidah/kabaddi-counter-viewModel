@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
+import com.example.kabaddikounter.service.LiveScoreForegroundService
 
 class ForegroundServiceWidget : AppWidgetProvider() {
 
