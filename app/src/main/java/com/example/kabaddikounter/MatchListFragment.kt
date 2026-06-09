@@ -83,13 +83,14 @@ class MatchListFragment : Fragment() {
         // Hasil subscribe berhasil
         viewModel.subscribedMatch.observe(viewLifecycleOwner) { match ->
             adapter.setSubscribedMatchId(match?.id)
-            if (match != null) {
-                Snackbar.make(
-                    binding.root,
-                    "Subscribe ke ${match.team_a} vs ${match.team_b} berhasil",
-                    Snackbar.LENGTH_SHORT
-                ).show()
-            }
+        }
+        viewModel.subscribeEvent.observe(viewLifecycleOwner) { match ->
+            match ?: return@observe
+            Snackbar.make(
+                binding.root,
+                "Subscribe ke ${match.team_a} vs ${match.team_b} berhasil",
+                Snackbar.LENGTH_SHORT
+            ).show()
         }
 
         // Error

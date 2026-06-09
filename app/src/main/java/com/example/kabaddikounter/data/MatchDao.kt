@@ -17,7 +17,7 @@ interface MatchDao {
     @Query("SELECT * FROM matches ORDER BY timestamp DESC")
     suspend fun getAllMatchesOnce(): List<MatchEntity>
 
-    @Query("SELECT * FROM matches ORDER BY timestamp DESC LIMIT 1")
+    @Query("SELECT * FROM matches WHERE status = 'LIVE' ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLastMatch(): MatchEntity?
 
     @Query("UPDATE matches SET score_a = :scoreA, score_b = :scoreB WHERE id = :id")

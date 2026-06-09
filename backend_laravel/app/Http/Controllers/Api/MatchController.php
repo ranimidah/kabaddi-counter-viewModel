@@ -71,24 +71,27 @@ class MatchController extends Controller
                 'score_b'  => $newScoreB,  // pakai nilai baru
             ]);
         }
+      
 
-        // 3. Ambil semua FCM token subscriber match ini
-        $tokens = Subscriber::where('match_id', $match->id)
-            ->pluck('fcm_token')
-            ->toArray();
+        // 3. Push FCM ke semua subscriber
+        if ($request->has('send_notif') && $request->send_notif == true) {
+            // Ambil semua FCM token subscriber match ini
+            $tokens = Subscriber::where('match_id', $match->id)
+                ->pluck('fcm_token')
+                ->toArray();
 
-        // 4. Push FCM ke semua subscriber
-        if (!empty($tokens)) {
-            $teamScored = $poinA > 0 ? $match->team_a : ($poinB > 0 ? $match->team_b : ''); // Nama tim yang mencetak poin
-            $this->sendFcmToTokens($tokens, [
-                'matchId'     => (string) $match->id,
-                'team_a'      => $match->team_a,
-                'team_b'      => $match->team_b,
-                'score_a'     => (string) $match->score_a,
-                'score_b'     => (string) $match->score_b,
-                'team_scored' => $teamScored,
-                'status'      => $match->status,
-            ]);
+            if (!empty($tokens)) {
+                $teamScored = $poinA > 0 ? $match->team_a : ($poinB > 0 ? $match->team_b : ''); // Nama tim yang mencetak poin
+                $this->sendFcmToTokens($tokens, [
+                    'matchId'     => (string) $match->id,
+                    'team_a'      => $match->team_a,
+                    'team_b'      => $match->team_b,
+                    'score_a'     => (string) $match->score_a,
+                    'score_b'     => (string) $match->score_b,
+                    'team_scored' => $teamScored,
+                    'status'      => $match->status,
+                ]);
+            }
         }
 
         return response()->json(['success' => true, 'data' => $match]);
@@ -111,7 +114,8 @@ class MatchController extends Controller
     {
         $projectId   = env('FIREBASE_PROJECT_ID');
         $accessToken = $this->getAccessToken();
-        $url         = "https://fcm.googleapis.com/v1/projects/android-kabbadi-rani-tantan/messages:send";
+
+        $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
 
         foreach ($tokens as $token) {
             Http::withHeaders([
@@ -121,6 +125,9 @@ class MatchController extends Controller
                 'message' => [
                     'token' => $token,
                     'data'  => $data,
+                    'android' => [
+                        'priority' => 'high', // Memastikan pesan segera sampai
+                    ],
                 ]
             ]);
         }
@@ -139,8 +146,8 @@ class MatchController extends Controller
             ->pluck('fcm_token')
             ->toArray();
 
-        foreach ($tokens as $token) {
-            $message = CloudMessage::withTarget('token', $token)
+        if (!empty($tokens)) {
+            $message = CloudMessage::new()
                 ->withNotification(
                     Notification::create(
                         'Match Ended',
@@ -148,14 +155,16 @@ class MatchController extends Controller
                     )
                 )
                 ->withData([
-                    'match_id' => (string)$match->id,
-                    'status' => 'END',
-                    'score_a' => (string)$match->score_a,
-                    'score_b' => (string)$match->score_b
+                    'match_id' => (string)$match->match_id,
+                    'status'   => 'END',
+                    'score_a'  => (string)$match->score_a,
+                    'score_b'  => (string)$match->score_b,
                 ]);
 
-            $messaging->send($message);
+            $messaging->sendMulticast($message, $tokens);
         }
+
+        $match->subscribers()->delete();
 
         return response()->json([
             'message' => 'Match ended'

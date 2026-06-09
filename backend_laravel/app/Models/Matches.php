@@ -17,6 +17,6 @@ class Matches extends Model
 
     public function subscribers()
     {
-        return $this->hasMany(Subscriber::class);
+        return $this->hasMany(Subscriber::class, 'match_id');
     }
 }

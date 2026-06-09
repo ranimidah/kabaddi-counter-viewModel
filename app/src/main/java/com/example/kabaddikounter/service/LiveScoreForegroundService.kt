@@ -15,6 +15,8 @@ import com.example.kabaddikounter.R
 class LiveScoreForegroundService : Service() {
 
     companion object {
+        var isRunning: Boolean = false
+            private set
         private const val NOTIF_ID = 2001
         private const val CHANNEL_ID = "foreground_live_score"
 
